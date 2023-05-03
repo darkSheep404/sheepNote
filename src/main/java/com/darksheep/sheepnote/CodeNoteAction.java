@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.impl.EditorImpl;
 import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
@@ -41,6 +42,9 @@ public class CodeNoteAction extends AnAction {
         dialogBuilder.addCancelAction();
         // 显示 Dialog
         dialogBuilder.show();
+        //获取文件路径
+        // var file_key = ((ArrayBackedFMap) ((DocumentImpl) ((EditorImpl) editor).myDocument).value).getKeys()[0]
+        //((ArrayBackedFMap) ((DocumentImpl) ((EditorImpl) editor).myDocument).value).getKey(file_key)
     }
 
     /**
@@ -51,6 +55,7 @@ public class CodeNoteAction extends AnAction {
      * @return 笔记面板
      */
     private JPanel createNotePanel(String selectedText, DialogBuilder dialogBuilder) {
+        // 创建一个笔记面板，使用 BorderLayout 布局
         JPanel notePanel = new JPanel(new BorderLayout());
         // 创建一个滚动面板
         JBScrollPane scrollPane = new JBScrollPane();
@@ -58,7 +63,7 @@ public class CodeNoteAction extends AnAction {
         JBTextArea noteTextArea = new JBTextArea();
         // 设置文本域的字体大小
         noteTextArea.setFont(noteTextArea.getFont().deriveFont(16f));
-        // 设置文本域的默认内容
+        // 设置文本域的默认内容为选中的文本
         noteTextArea.setText(selectedText);
         // 把文本域添加到滚动面板中
         scrollPane.setViewportView(noteTextArea);
@@ -68,9 +73,10 @@ public class CodeNoteAction extends AnAction {
         // 添加一个标签，提示用户输入笔记标题
         notePanel.add(new JLabel("笔记标题："), BorderLayout.NORTH);
         // 创建一个文本框，用于输入笔记标题
-        JTextField titleTextField = new JTextField();
+        JTextField titleTextField = new JTextField("测试");
         // 把文本框添加到笔记面板中
         notePanel.add(titleTextField, BorderLayout.SOUTH);
+
 
         // 给 DialogBuilder 添加确认按钮的监听器，用于保存笔记
         dialogBuilder.setOkOperation(() -> {
@@ -89,9 +95,22 @@ public class CodeNoteAction extends AnAction {
             // 关闭 Dialog
             dialogBuilder.getDialogWrapper().close(DialogWrapper.OK_EXIT_CODE);
         });
+        dialogBuilder.setCancelOperation(()->{
+            System.out.println(noteTextArea);
+            dialogBuilder.getDialogWrapper().close(DialogWrapper.CANCEL_EXIT_CODE);
+        });
 
         // 显示 Dialog
-        dialogBuilder.show();
+        /**
+         *  2023.05.03修正: 解决弹出弹窗后没有输入页面的问题
+         *  dialogBuilder.show();
+         *  在 createNotePanel 方法中，DialogBuilder 的 show() 方法在返回 notePanel 前被调用，因此对话框会在调用 show() 方法时弹出并阻塞线程，导致用户无法在 notePanel 上进行输入
+         *  为了解决这个问题，可以在 createNotePanel 方法中先返回 notePanel，再在外部的调用方法中调用 DialogBuilder 的 show() 方法，使得对话框可以在 notePanel 调用后弹出
+         *  --promot : 分析一下以上代码会存在什么问题 如何修复
+         *  -- 无效promot : 仅粘贴本方法代码 询问 运行时 没有显示可以输入的文本框 分析一下可能的原因和改正方式
+          */
+
+
         return notePanel;
     }
 
