@@ -18,6 +18,10 @@ repositories {
     }
 }
 
+dependencies {
+    implementation("org.xerial:sqlite-jdbc:3.21.0.1")
+}
+
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {

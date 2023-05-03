@@ -1,19 +1,22 @@
 package com.darksheep.sheepnote;
 
+import com.darksheep.sheepnote.config.NoteDataRepository;
+import com.darksheep.sheepnote.data.NoteData;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.impl.EditorImpl;
+import com.intellij.openapi.editor.SelectionModel;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.ui.VerticalFlowLayout;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -30,12 +33,46 @@ public class CodeNoteAction extends AnAction {
             Messages.showMessageDialog("请先选中要做笔记的代码！", "提示", Messages.getInformationIcon());
             return;
         }
+
+        /**
+         *
+         */
+        SelectionModel selectionModel = editor.getSelectionModel();
+        Document document = editor.getDocument();
+        int startOffset = selectionModel.getSelectionStart();
+        int startLine = document.getLineNumber(startOffset) + 1;
+        VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
+        String filePath = virtualFile != null ? virtualFile.getPath() : "";
+
+        /**
+         * Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+         * if (editor == null) {
+         *     return;
+         * }
+         *
+         * SelectionModel selectionModel = editor.getSelectionModel();
+         * Document document = editor.getDocument();
+         * int startOffset = selectionModel.getSelectionStart();
+         * int endOffset = selectionModel.getSelectionEnd();
+         * int startLine = document.getLineNumber(startOffset) + 1;
+         * int endLine = document.getLineNumber(endOffset) + 1;
+         * VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
+         * String filePath = virtualFile != null ? virtualFile.getPath() : "";
+         *
+         * String selectedText = selectionModel.getSelectedText();
+         * if (selectedText != null && !selectedText.isEmpty()) {
+         *     // 调用上面的方法显示笔记对话框，并传入选中的代码和文件信息
+         *     showNoteDialog(selectedText, filePath, startLine, endLine);
+         * }
+         */
+
+
         // 创建一个 DialogBuilder 对象
         DialogBuilder dialogBuilder = new DialogBuilder(e.getProject());
         // 设置 Dialog 的标题
         dialogBuilder.setTitle("代码笔记");
         // 设置 Dialog 的内容
-        dialogBuilder.setCenterPanel(createNotePanel(selectedText, dialogBuilder));
+        dialogBuilder.setCenterPanel(createNotePanel(selectedText, dialogBuilder,startLine,filePath));
         // 添加确认按钮
         dialogBuilder.addOkAction().setText("保存");
         // 添加取消按钮
@@ -54,9 +91,20 @@ public class CodeNoteAction extends AnAction {
      * @param dialogBuilder DialogBuilder 对象
      * @return 笔记面板
      */
-    private JPanel createNotePanel(String selectedText, DialogBuilder dialogBuilder) {
+    private JPanel createNotePanel(String selectedText, DialogBuilder dialogBuilder,int startLine,String filePath) {
         // 创建一个笔记面板，使用 BorderLayout 布局
         JPanel notePanel = new JPanel(new BorderLayout());
+
+        // 添加一个标签，提示用户输入笔记标题
+        notePanel.add(new JLabel("笔记标题："), BorderLayout.NORTH);
+        // 创建一个文本框，用于输入笔记标题
+        JTextField titleTextField = new JTextField("测试");
+        // 把文本框添加到笔记面板中
+        notePanel.add(titleTextField, BorderLayout.SOUTH);
+
+        /**
+         * 笔记内容输入框:滚动面板
+         */
         // 创建一个滚动面板
         JBScrollPane scrollPane = new JBScrollPane();
         // 创建一个文本域
@@ -70,13 +118,6 @@ public class CodeNoteAction extends AnAction {
         // 把滚动面板添加到笔记面板中
         notePanel.add(scrollPane, BorderLayout.CENTER);
 
-        // 添加一个标签，提示用户输入笔记标题
-        notePanel.add(new JLabel("笔记标题："), BorderLayout.NORTH);
-        // 创建一个文本框，用于输入笔记标题
-        JTextField titleTextField = new JTextField("测试");
-        // 把文本框添加到笔记面板中
-        notePanel.add(titleTextField, BorderLayout.SOUTH);
-
 
         // 给 DialogBuilder 添加确认按钮的监听器，用于保存笔记
         dialogBuilder.setOkOperation(() -> {
@@ -89,9 +130,14 @@ public class CodeNoteAction extends AnAction {
                 Messages.showMessageDialog("Please enter both title and note", "Error", Messages.getErrorIcon());
                 return;
             }
-            // 在控制台输出笔记内容
-            System.out.println("Note Title: " + title);
-            System.out.println("Note Content: " + note);
+            try{
+                NoteData noteData = new NoteData(title, note,startLine, filePath);
+                NoteDataRepository.insert(noteData);
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
             // 关闭 Dialog
             dialogBuilder.getDialogWrapper().close(DialogWrapper.OK_EXIT_CODE);
         });
@@ -109,8 +155,6 @@ public class CodeNoteAction extends AnAction {
          *  --promot : 分析一下以上代码会存在什么问题 如何修复
          *  -- 无效promot : 仅粘贴本方法代码 询问 运行时 没有显示可以输入的文本框 分析一下可能的原因和改正方式
           */
-
-
         return notePanel;
     }
 
