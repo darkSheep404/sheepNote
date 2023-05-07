@@ -2,6 +2,7 @@ package com.darksheep.sheepnote.toolWindow;
 
 import com.darksheep.sheepnote.config.NoteDataRepository;
 import com.darksheep.sheepnote.data.NoteData;
+import com.google.common.eventbus.EventBus;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -35,6 +36,7 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
 
     private JBList<NoteData> noteList;
     private DefaultListModel<NoteData> noteListModel = new DefaultListModel<>();
+    private NoteDetailPanel rightPanel;
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
@@ -54,10 +56,7 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
         noteList.addListSelectionListener(e -> {
             NoteData selectedNote = noteList.getSelectedValue();
             if (selectedNote != null) {
-                noteTitleLabel.setText(selectedNote.noteTitle);
-                noteFilePathLabel.setText(selectedNote.noteFilePath);
-                noteLineNumberLabel.setText("Line " + selectedNote.noteLineNumber);
-                selectCodeTextArea.setText(selectedNote.selectCode);
+              rightPanel.setNoteDetail(selectedNote);
             }
         });
 
@@ -99,7 +98,7 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
         selectCodeTextArea.setEditable(false);
 
         // 初始化整个笔记列表窗口
-        JPanel content = new JPanel(new BorderLayout());
+        JPanel leftPanel = new JPanel(new BorderLayout());
 
         //左上第一部分 排序按钮
         JPanel buttonPanel = new JPanel();
@@ -107,14 +106,37 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
         buttonPanel.setLayout(new FlowLayout());
         buttonPanel.add(sortByCreateTimeButton);
         buttonPanel.add(sortByCreateTimeButton);
-        content.add(buttonPanel,BorderLayout.NORTH);
+        leftPanel.add(buttonPanel,BorderLayout.NORTH);
 
         //左上第二部分 搜索框
-        content.add(searchTextField,BorderLayout.CENTER);
+        leftPanel.add(searchTextField,BorderLayout.CENTER);
         //左侧第三部分 笔记列表
-        content.add(noteListWrapperPanel, BorderLayout.SOUTH);
+        leftPanel.add(noteListWrapperPanel, BorderLayout.SOUTH);
+
+        //整个笔记面板
+
+
+
+
+        rightPanel =  new NoteDetailPanel();
+        rightPanel.setNoteDetail(noteListModel.get(0));
+
+        //TODO 接收保存笔记事件并刷新UI
+      /*  EventBus bus = project.getService(EventBus.class);
+        bus.subscribe(AddNoteEvent.TOPIC, new AddNoteEventListener() {
+            @Override
+            public void onAddNoteEvent(NoteData noteData) {
+                noteListModel.addElement(noteData);
+                noteListModel.fireContentsChanged(this, 0, noteListModel.getSize() - 1);
+            }
+        });*/
+
+
+        JSplitPane mainPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
+        mainPanel.setDividerLocation(200);
+
        /* content.add(noteDetailPanel, BorderLayout.CENTER);*/
-        Content content01 = toolWindow.getContentManager().getFactory().createContent(content,"", false);
+        Content content01 = toolWindow.getContentManager().getFactory().createContent(mainPanel,"", false);
        /* toolWindow.getContentManager().addContent(
                 ContentFactory.SERVICE.getInstance().createContent(content, "", false));*/
         toolWindow.getContentManager().addContent(content01);

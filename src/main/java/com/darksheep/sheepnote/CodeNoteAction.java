@@ -2,6 +2,7 @@ package com.darksheep.sheepnote;
 
 import com.darksheep.sheepnote.config.NoteDataRepository;
 import com.darksheep.sheepnote.data.NoteData;
+import com.google.common.eventbus.EventBus;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -9,11 +10,13 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.SelectionModel;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
 import org.jetbrains.annotations.NotNull;
@@ -22,6 +25,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class CodeNoteAction extends AnAction {
+    Project currentProject = IdeFocusManager.getGlobalInstance().getLastFocusedFrame().getProject();
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         // 获取当前编辑器对象
@@ -131,8 +135,11 @@ public class CodeNoteAction extends AnAction {
                 return;
             }
             try{
-                NoteData noteData = new NoteData(title, note,startLine, filePath);
+                NoteData noteData = new NoteData(title,filePath,startLine, note);
                 NoteDataRepository.insert(noteData);
+                //TODO 保存笔记时 发布事件 来刷新toolsWindow的UI
+               /* EventBus bus = currentProject.getService(EventBus.class);
+                bus.syncPublisher(AddNoteEvent.TOPIC).onAddNoteEvent(selectedNote);*/
 
             }
             catch (Exception e){
