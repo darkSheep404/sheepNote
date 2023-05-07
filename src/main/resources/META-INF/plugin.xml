@@ -25,7 +25,8 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-
+        <toolWindow id="darkSheepNote" secondary="true" anchor="right"
+                    factoryClass="com.darksheep.sheepnote.toolWindow.NoteListToolWindowFactory"/>
     </extensions>
     <actions>
         <action id="MyPlugin.MyAction"
