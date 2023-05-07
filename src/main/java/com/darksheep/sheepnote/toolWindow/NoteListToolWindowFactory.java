@@ -1,9 +1,12 @@
 package com.darksheep.sheepnote.toolWindow;
 
+import com.darksheep.sheepnote.config.NoteDataRepository;
 import com.darksheep.sheepnote.data.NoteData;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
+import com.intellij.ui.components.JBList;
+import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,6 +15,7 @@ import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -20,8 +24,8 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
     private JPanel noteListPanel = new JPanel();
     private JTextField searchTextField = new JFormattedTextField();
     private JPanel buttonPanel =  new JPanel();
-    private JButton sortByCreateTimeButton = new JButton();
-    private JButton sortByUpdateTimeButton = new JButton();
+    private JButton sortByCreateTimeButton = new JButton("按更新时间排序");
+    private JButton sortByUpdateTimeButton = new JButton("按创建时间排序");
     private JPanel noteListWrapperPanel = new JPanel();
     private JPanel noteDetailPanel = new JPanel();
     private JLabel noteTitleLabel = new JLabel();
@@ -29,22 +33,23 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
     private JLabel noteLineNumberLabel = new JLabel();
     private JTextArea selectCodeTextArea = new JTextArea();
 
-    private JList<NoteData> noteList;
+    private JBList<NoteData> noteList;
     private DefaultListModel<NoteData> noteListModel = new DefaultListModel<>();
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        List<NoteData> noteDataList = new ArrayList<>();
-        noteDataList.add(new NoteData("Note 1", "/path/to/note1.txt", 10, "select * from table1"));
-        noteDataList.add(new NoteData("Note 2", "/path/to/note2.txt", 20, "select * from table2"));
-        noteDataList.add(new NoteData("Note 3", "/path/to/note3.txt", 30, "select * from table3"));
-
+        List<NoteData> noteDataList = new ArrayList<>() ;
+        try {
+            noteDataList = NoteDataRepository.getAllNoteData();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         // 初始化笔记列表
         for (NoteData noteData : noteDataList) {
             noteListModel.addElement(noteData);
         }
 
-        noteList = new JList<>(noteListModel);
+        noteList = new JBList<>(noteListModel);
         noteList.setCellRenderer(new NoteListRenderer());
         noteList.addListSelectionListener(e -> {
             NoteData selectedNote = noteList.getSelectedValue();
@@ -95,11 +100,24 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
 
         // 初始化整个笔记列表窗口
         JPanel content = new JPanel(new BorderLayout());
-        content.add(noteListPanel, BorderLayout.WEST);
-        content.add(noteDetailPanel, BorderLayout.CENTER);
 
-        toolWindow.getContentManager().addContent(
-                ContentFactory.SERVICE.getInstance().createContent(content, "", false));
+        //左上第一部分 排序按钮
+        JPanel buttonPanel = new JPanel();
+
+        buttonPanel.setLayout(new FlowLayout());
+        buttonPanel.add(sortByCreateTimeButton);
+        buttonPanel.add(sortByCreateTimeButton);
+        content.add(buttonPanel,BorderLayout.NORTH);
+
+        //左上第二部分 搜索框
+        content.add(searchTextField,BorderLayout.CENTER);
+        //左侧第三部分 笔记列表
+        content.add(noteListWrapperPanel, BorderLayout.SOUTH);
+       /* content.add(noteDetailPanel, BorderLayout.CENTER);*/
+        Content content01 = toolWindow.getContentManager().getFactory().createContent(content,"", false);
+       /* toolWindow.getContentManager().addContent(
+                ContentFactory.SERVICE.getInstance().createContent(content, "", false));*/
+        toolWindow.getContentManager().addContent(content01);
     }
 
     /**

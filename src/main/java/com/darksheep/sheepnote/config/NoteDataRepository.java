@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,19 +41,22 @@ public class NoteDataRepository {
      * @return 所有笔记数据对象的列表
      * @throws SQLException 查询失败抛出异常
      */
-    public static List<NoteData> getAllNoteData(Connection connection) throws SQLException {
+    public static List<NoteData> getAllNoteData() throws SQLException, ParseException {
         String sql = "SELECT * FROM notes";
         PreparedStatement statement = connection.prepareStatement(sql);
         ResultSet resultSet = statement.executeQuery();
         List<NoteData> noteDataList = new ArrayList<>();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         while (resultSet.next()) {
             NoteData noteData = new NoteData();
             noteData.noteTitle = resultSet.getString("title");
             noteData.noteFilePath = resultSet.getString("file_path");
             noteData.noteLineNumber = resultSet.getInt("line_number");
             noteData.selectCode = resultSet.getString("select_code");
-            noteData.createTime = resultSet.getTimestamp("create_time");
-            noteData.updateTime = resultSet.getTimestamp("update_time");
+            String createTime = resultSet.getString("create_time");
+            String updateTime = resultSet.getString("update_time");
+            noteData.createTime =dateFormat.parse(createTime);
+            noteData.updateTime = dateFormat.parse(updateTime);
             noteDataList.add(noteData);
         }
         resultSet.close();
