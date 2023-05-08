@@ -1,5 +1,6 @@
 package com.darksheep.sheepnote;
 
+import com.darksheep.sheepnote.config.AddNoteEventListener;
 import com.darksheep.sheepnote.config.NoteDataRepository;
 import com.darksheep.sheepnote.data.NoteData;
 import com.google.common.eventbus.EventBus;
@@ -19,6 +20,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
+import com.intellij.util.messages.MessageBus;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -47,29 +49,6 @@ public class CodeNoteAction extends AnAction {
         int startLine = document.getLineNumber(startOffset) + 1;
         VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
         String filePath = virtualFile != null ? virtualFile.getPath() : "";
-
-        /**
-         * Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
-         * if (editor == null) {
-         *     return;
-         * }
-         *
-         * SelectionModel selectionModel = editor.getSelectionModel();
-         * Document document = editor.getDocument();
-         * int startOffset = selectionModel.getSelectionStart();
-         * int endOffset = selectionModel.getSelectionEnd();
-         * int startLine = document.getLineNumber(startOffset) + 1;
-         * int endLine = document.getLineNumber(endOffset) + 1;
-         * VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
-         * String filePath = virtualFile != null ? virtualFile.getPath() : "";
-         *
-         * String selectedText = selectionModel.getSelectedText();
-         * if (selectedText != null && !selectedText.isEmpty()) {
-         *     // 调用上面的方法显示笔记对话框，并传入选中的代码和文件信息
-         *     showNoteDialog(selectedText, filePath, startLine, endLine);
-         * }
-         */
-
 
         // 创建一个 DialogBuilder 对象
         DialogBuilder dialogBuilder = new DialogBuilder(e.getProject());
@@ -137,9 +116,10 @@ public class CodeNoteAction extends AnAction {
             try{
                 NoteData noteData = new NoteData(title,filePath,startLine, note);
                 NoteDataRepository.insert(noteData);
-                //TODO 保存笔记时 发布事件 来刷新toolsWindow的UI
-               /* EventBus bus = currentProject.getService(EventBus.class);
-                bus.syncPublisher(AddNoteEvent.TOPIC).onAddNoteEvent(selectedNote);*/
+                // 发布事件以刷新 UI
+                MessageBus messageBus = currentProject.getMessageBus();
+                messageBus.syncPublisher(AddNoteEventListener.ADD_NOTE_TOPIC).onAddNoteEvent(noteData);
+
 
             }
             catch (Exception e){
@@ -154,14 +134,6 @@ public class CodeNoteAction extends AnAction {
         });
 
         // 显示 Dialog
-        /**
-         *  2023.05.03修正: 解决弹出弹窗后没有输入页面的问题
-         *  dialogBuilder.show();
-         *  在 createNotePanel 方法中，DialogBuilder 的 show() 方法在返回 notePanel 前被调用，因此对话框会在调用 show() 方法时弹出并阻塞线程，导致用户无法在 notePanel 上进行输入
-         *  为了解决这个问题，可以在 createNotePanel 方法中先返回 notePanel，再在外部的调用方法中调用 DialogBuilder 的 show() 方法，使得对话框可以在 notePanel 调用后弹出
-         *  --promot : 分析一下以上代码会存在什么问题 如何修复
-         *  -- 无效promot : 仅粘贴本方法代码 询问 运行时 没有显示可以输入的文本框 分析一下可能的原因和改正方式
-          */
         return notePanel;
     }
 

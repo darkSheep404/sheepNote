@@ -1,7 +1,9 @@
 package com.darksheep.sheepnote.toolWindow;
 
+import com.darksheep.sheepnote.config.AddNoteEventListener;
 import com.darksheep.sheepnote.config.NoteDataRepository;
 import com.darksheep.sheepnote.data.NoteData;
+import com.darksheep.sheepnote.editor.NoteDataHandler;
 import com.google.common.eventbus.EventBus;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
@@ -9,6 +11,7 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
+import com.intellij.util.messages.MessageBus;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -22,150 +25,55 @@ import java.util.Comparator;
 import java.util.List;
 
 public class NoteListToolWindowFactory implements ToolWindowFactory {
-    private JPanel noteListPanel = new JPanel();
+
+    public static final String TOOL_WINDOW_ID = "darkSheepNote";
     private JTextField searchTextField = new JFormattedTextField();
-    private JPanel buttonPanel =  new JPanel();
     private JButton sortByCreateTimeButton = new JButton("按更新时间排序");
     private JButton sortByUpdateTimeButton = new JButton("按创建时间排序");
     private JPanel noteListWrapperPanel = new JPanel();
-    private JPanel noteDetailPanel = new JPanel();
-    private JLabel noteTitleLabel = new JLabel();
-    private JLabel noteFilePathLabel = new JLabel();
-    private JLabel noteLineNumberLabel = new JLabel();
     private JTextArea selectCodeTextArea = new JTextArea();
 
     private JBList<NoteData> noteList;
     private DefaultListModel<NoteData> noteListModel = new DefaultListModel<>();
     private NoteDetailPanel rightPanel;
 
+    private  NoteListController noteListController;
+
+    private static NoteDataHandler noteDataHandler;
+
+
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        List<NoteData> noteDataList = new ArrayList<>() ;
-        try {
-            noteDataList = NoteDataRepository.getAllNoteData();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        // 初始化笔记列表
-        for (NoteData noteData : noteDataList) {
-            noteListModel.addElement(noteData);
-        }
 
-        noteList = new JBList<>(noteListModel);
-        noteList.setCellRenderer(new NoteListRenderer());
-        noteList.addListSelectionListener(e -> {
-            NoteData selectedNote = noteList.getSelectedValue();
-            if (selectedNote != null) {
-              rightPanel.setNoteDetail(selectedNote);
-            }
-        });
-
-        // 初始化搜索框
-        searchTextField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                searchNoteList();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                searchNoteList();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                searchNoteList();
-            }
-        });
-
-        // 初始化排序按钮
-        sortByCreateTimeButton.addActionListener(e -> {
-            //TODO 排序暂未实现
-            /*Collections.sort(Arrays.asList(noteListModel.toArray()), new NoteDataComparator(NoteDataComparator.SortField.CREATE_TIME));*/
-            noteList.repaint();
-        });
-
-        sortByUpdateTimeButton.addActionListener(e -> {
-           /* Collections.sort(Arrays.asList(noteListModel.toArray()), new NoteDataComparator(NoteDataComparator.SortField.UPDATE_TIME));*/
-            noteList.repaint();
-        });
-
-        // 初始化笔记列表面板
-        noteListWrapperPanel.setLayout(new BorderLayout());
-        noteListWrapperPanel.add(new JScrollPane(noteList));
-
-        // 初始化笔记详情面板
-        selectCodeTextArea.setEditable(false);
-
-        // 初始化整个笔记列表窗口
-        JPanel leftPanel = new JPanel(new BorderLayout());
-
-        //左上第一部分 排序按钮
+        // 初始化排序按钮面板
         JPanel buttonPanel = new JPanel();
-
         buttonPanel.setLayout(new FlowLayout());
         buttonPanel.add(sortByCreateTimeButton);
-        buttonPanel.add(sortByCreateTimeButton);
-        leftPanel.add(buttonPanel,BorderLayout.NORTH);
+        buttonPanel.add(sortByUpdateTimeButton);
 
-        //左上第二部分 搜索框
-        leftPanel.add(searchTextField,BorderLayout.CENTER);
-        //左侧第三部分 笔记列表
+        // 设置左侧面板内容
+        JPanel leftPanel = new JPanel(new BorderLayout());
+        leftPanel.add(buttonPanel, BorderLayout.NORTH);
+        leftPanel.add(searchTextField, BorderLayout.CENTER);
         leftPanel.add(noteListWrapperPanel, BorderLayout.SOUTH);
+        //初始化右侧面板
+        rightPanel = new NoteDetailPanel();
 
-        //整个笔记面板
-
-
-
-
-        rightPanel =  new NoteDetailPanel();
-        rightPanel.setNoteDetail(noteListModel.get(0));
-
-        //TODO 接收保存笔记事件并刷新UI
-      /*  EventBus bus = project.getService(EventBus.class);
-        bus.subscribe(AddNoteEvent.TOPIC, new AddNoteEventListener() {
-            @Override
-            public void onAddNoteEvent(NoteData noteData) {
-                noteListModel.addElement(noteData);
-                noteListModel.fireContentsChanged(this, 0, noteListModel.getSize() - 1);
-            }
-        });*/
-
+        //为笔记列表面板 绑定事件和数据
+        prepareNoteListViewAndController(project, toolWindow);
+        noteDataHandler = new NoteDataHandler(project);
 
         JSplitPane mainPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
         mainPanel.setDividerLocation(200);
 
-       /* content.add(noteDetailPanel, BorderLayout.CENTER);*/
-        Content content01 = toolWindow.getContentManager().getFactory().createContent(mainPanel,"", false);
-       /* toolWindow.getContentManager().addContent(
-                ContentFactory.SERVICE.getInstance().createContent(content, "", false));*/
-        toolWindow.getContentManager().addContent(content01);
+        Content toolsWindowContent = toolWindow.getContentManager().getFactory().createContent(mainPanel, "", false);
+        toolWindow.getContentManager().addContent(toolsWindowContent);
     }
 
     /**
      * 模糊搜索笔记列表中 noteTitle 与输入文本匹配的笔记
      */
-    private void searchNoteList() {
-        String searchText = searchTextField.getText().trim().toLowerCase();
-        if (searchText.isEmpty()) {
-            noteList.clearSelection();
-            noteList.repaint();
-            return;
-        }
 
-        for (int i = 0; i < noteListModel.size(); i++) {
-            NoteData note = noteListModel.get(i);
-            if (note.noteTitle.toLowerCase().contains(searchText)) {
-                noteList.setSelectedIndex(i);
-                noteList.ensureIndexIsVisible(i);
-                noteList.repaint();
-                return;
-            }
-        }
-
-        noteList.clearSelection();
-        noteList.repaint();
-    }
 
     private static class NoteListRenderer extends JLabel implements ListCellRenderer<NoteData> {
         private static final Border SELECTED_BORDER = BorderFactory.createLineBorder(Color.GRAY,0);
@@ -180,28 +88,50 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
         }
     }
 
-    private static class NoteDataComparator implements Comparator<NoteData> {
-        enum SortField {
-            CREATE_TIME,
-            UPDATE_TIME
+    private void prepareNoteListViewAndController(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+        List<NoteData> noteDataList = new ArrayList<>();
+        try {
+            noteDataList = NoteDataRepository.getAllNoteData();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        private final SortField sortField;
-
-        public NoteDataComparator(SortField sortField) {
-            this.sortField = sortField;
+        // 初始化笔记列表
+        for (NoteData noteData : noteDataList) {
+            noteListModel.addElement(noteData);
         }
 
-        @Override
-        public int compare(NoteData o1, NoteData o2) {
-            switch (sortField) {
-                case CREATE_TIME:
-                    return o2.createTime.compareTo(o1.createTime);
-                case UPDATE_TIME:
-                    return o2.updateTime.compareTo(o1.updateTime);
-                default:
-                    return 0;
-            }
-        }
+        noteList = new JBList<>(noteListModel);
+        noteList.setCellRenderer(new NoteListRenderer());
+
+        // 初始化笔记列表面板
+        noteListWrapperPanel.setLayout(new BorderLayout());
+        noteListWrapperPanel.add(new JScrollPane(noteList));
+
+        // 初始化笔记详情面板
+        selectCodeTextArea.setEditable(false);
+
+        // 设置默认选中的笔记
+        rightPanel.setNoteDetail(noteListModel.get(0));
+
+        // 初始化 NoteListController
+        noteListController = new NoteListController(noteListModel, noteList, searchTextField, sortByCreateTimeButton, sortByUpdateTimeButton,rightPanel);
+
+        // NoteListController 订阅添加笔记事件（添加到列表的第一个位置）
+        MessageBus messageBus = project.getMessageBus();
+        messageBus.connect(toolWindow.getDisposable()).subscribe(AddNoteEventListener.ADD_NOTE_TOPIC, noteData -> {
+            noteListModel.insertElementAt(noteData, 0);
+            noteListController.addNewNoteToNoteList(noteData);
+            noteList.updateUI();
+            noteList.setSelectedIndex(0);
+            noteList.ensureIndexIsVisible(0);
+        });
     }
+    public static NoteDataHandler getNoteDataHandler() {
+        return noteDataHandler;
+    }
+
+   /* public static List<NoteData> getNoteList(){
+        return noteList;
+    }*/
 }

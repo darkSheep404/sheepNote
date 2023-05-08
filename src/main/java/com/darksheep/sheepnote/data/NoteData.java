@@ -21,4 +21,28 @@ public class NoteData {
         this.noteLineNumber = noteLineNumber;
         this.selectCode = selectCode;
     }
+
+    public String getNoteTitle() {
+        return noteTitle;
+    }
+
+    public String getNoteFilePath() {
+        return noteFilePath;
+    }
+
+    public int getNoteLineNumber() {
+        return noteLineNumber;
+    }
+
+    public String getSelectCode() {
+        return selectCode;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public Date getUpdateTime() {
+        return updateTime;
+    }
 }
