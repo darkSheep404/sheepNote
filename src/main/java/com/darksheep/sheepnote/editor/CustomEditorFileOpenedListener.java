@@ -96,8 +96,11 @@ public class CustomEditorFileOpenedListener implements FileEditorManagerListener
         @Override
         public void paint(@NotNull Inlay inlay, @NotNull Graphics g, @NotNull Rectangle targetRegion, @NotNull TextAttributes textAttributes) {
             Graphics2D g2d = (Graphics2D) g;
-            g2d.setColor(JBColor.GRAY);
-            g2d.drawString("//"+text, targetRegion.x, targetRegion.y + g.getFontMetrics().getAscent());
+            g2d.setColor(JBColor.yellow);
+            Font font = new Font("Microsoft YaHei", Font.PLAIN, g.getFont().getSize());
+            FontMetrics fontMetrics = g2d.getFontMetrics(font);
+            g2d.setFont(font);
+            g2d.drawString("//"+text, targetRegion.x, targetRegion.y + fontMetrics.getAscent());
         }
     }
 }
