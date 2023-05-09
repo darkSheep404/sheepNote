@@ -4,24 +4,18 @@ import com.darksheep.sheepnote.config.AddNoteEventListener;
 import com.darksheep.sheepnote.config.NoteDataRepository;
 import com.darksheep.sheepnote.data.NoteData;
 import com.darksheep.sheepnote.editor.NoteDataHandler;
-import com.google.common.eventbus.EventBus;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.content.Content;
-import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.messages.MessageBus;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class NoteListToolWindowFactory implements ToolWindowFactory {
