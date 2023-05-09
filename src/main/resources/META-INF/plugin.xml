@@ -26,13 +26,13 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="darkSheepNote" secondary="true" anchor="right"
                     factoryClass="com.darksheep.sheepnote.toolWindow.NoteListToolWindowFactory"/>
-        <postStartupActivity  implementation="com.darksheep.sheepnote.editor.failtest.CustomNewFileListener"/>
-<!--        <annotator language="JAVA" implementationClass="com.darksheep.sheepnote.editor.failtest.CustomAnnotator"/>-->
-<!--  gpt给出标签不可用 参照官方文档修改     https://plugins.jetbrains.com/docs/intellij/line-marker-provider.html#register-the-line-marker-provider-->
-        <codeInsight.lineMarkerProvider  implementationClass="com.darksheep.sheepnote.editor.failtest.CustomGutterIconProvider"/>
+      <!--  <postStartupActivity  implementation="com.darksheep.sheepnote.editor.failtest.CustomNewFileListener"/>
+&lt;!&ndash;        <annotator language="JAVA" implementationClass="com.darksheep.sheepnote.editor.failtest.CustomAnnotator"/>&ndash;&gt;
+&lt;!&ndash;  gpt给出标签不可用 参照官方文档修改     https://plugins.jetbrains.com/docs/intellij/line-marker-provider.html#register-the-line-marker-provider&ndash;&gt;
+        <codeInsight.lineMarkerProvider  implementationClass="com.darksheep.sheepnote.editor.failtest.CustomGutterIconProvider"/>-->
     </extensions>
     <actions>
-        <action id="MyPlugin.MyAction"
+        <action id="com.darksheep.sheepnote.CodeNoteAction"
                 class="com.darksheep.sheepnote.CodeNoteAction"
                 text="Add Note to Code"
                 description="Add a note to the selected code">

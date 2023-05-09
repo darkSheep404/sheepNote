@@ -27,9 +27,10 @@ import javax.swing.*;
 import java.awt.*;
 
 public class CodeNoteAction extends AnAction {
-    Project currentProject = IdeFocusManager.getGlobalInstance().getLastFocusedFrame().getProject();
+
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
+        Project currentProject = IdeFocusManager.getGlobalInstance().getLastFocusedFrame().getProject();
         // 获取当前编辑器对象
         Editor editor = e.getRequiredData(CommonDataKeys.EDITOR);
         // 获取选中的代码
@@ -75,6 +76,7 @@ public class CodeNoteAction extends AnAction {
      * @return 笔记面板
      */
     private JPanel createNotePanel(String selectedText, DialogBuilder dialogBuilder,int startLine,String filePath) {
+        Project currentProject = IdeFocusManager.getGlobalInstance().getLastFocusedFrame().getProject();
         // 创建一个笔记面板，使用 BorderLayout 布局
         JPanel notePanel = new JPanel(new BorderLayout());
 
