@@ -21,12 +21,17 @@
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.java</depends>
 
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="darkSheepNote" secondary="true" anchor="right"
                     factoryClass="com.darksheep.sheepnote.toolWindow.NoteListToolWindowFactory"/>
+        <postStartupActivity  implementation="com.darksheep.sheepnote.editor.failtest.CustomNewFileListener"/>
+<!--        <annotator language="JAVA" implementationClass="com.darksheep.sheepnote.editor.failtest.CustomAnnotator"/>-->
+<!--  gpt给出标签不可用 参照官方文档修改     https://plugins.jetbrains.com/docs/intellij/line-marker-provider.html#register-the-line-marker-provider-->
+        <codeInsight.lineMarkerProvider  implementationClass="com.darksheep.sheepnote.editor.failtest.CustomGutterIconProvider"/>
     </extensions>
     <actions>
         <action id="MyPlugin.MyAction"
@@ -37,5 +42,16 @@
 <!--            <keyboard-shortcut first-keystroke="control alt N"/>-->
         </action>
     </actions>
+   <!-- <applicationListeners>
+        <listener class="com.darksheep.sheepnote.editor.CustomNoteEditorMouseListenerer"
+                  topic="com.intellij.openapi.editor.event.EditorFactoryListener"/>
+    </applicationListeners>-->
+    <projectListeners>
+        <listener class="com.darksheep.sheepnote.editor.failtest.NoteEditorMouseListener"
+                  topic="com.intellij.openapi.editor.event.EditorFactoryListener"/>
+    </projectListeners>
+    <applicationListeners>
+        <listener topic="com.intellij.openapi.fileEditor.FileEditorManagerListener" class="com.darksheep.sheepnote.editor.CustomEditorFileOpenedListener"/>
+    </applicationListeners>
 
 </idea-plugin>

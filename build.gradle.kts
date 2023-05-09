@@ -9,17 +9,36 @@ group = "com.darksheep"
 version = "1.0-SNAPSHOT"
 
 repositories {
-    //mavenCentral()
+    /*上述代码将阿里云Maven仓库设置为优先级最高，
+    从而加快Gradle的构建速度。请注意，通常只需将 "public" 仓库添加到 repositories 中，
+    因为这个仓库会根据请求自动代理其他仓库（例如 jcenter、google 等）。
+    但是，为了确保更好的兼容性和分级，您也可以用上述配置添加所有阿里云Maven仓库*/
+    mavenLocal()
+    mavenCentral()
+    maven {
+        setUrl("https://maven.aliyun.com/repository/public")
+    }
+    maven {
+        setUrl("https://maven.aliyun.com/repository/jcenter")
+    }
     maven {
         setUrl("https://maven.aliyun.com/repository/gradle-plugin")
     }
     maven {
-        setUrl("https://maven.aliyun.com/repository/public/")
+        setUrl("https://maven.aliyun.com/repository/google")
+    }
+    maven {
+        setUrl("https://maven.aliyun.com/repository/spring")
+    }
+    maven {
+        setUrl("https://maven.aliyun.com/repository/spring-plugin")
     }
 }
 
 dependencies {
     implementation("org.xerial:sqlite-jdbc:3.21.0.1")
+   /* implementation("com.intellij:psi:2021.3.0")
+    implementation("com.intellij:java-psi:2021.3.0")*/
 }
 
 // Configure Gradle IntelliJ Plugin
@@ -28,6 +47,7 @@ intellij {
     version.set("2021.3")
     type.set("IC") // Target IDE Platform
     plugins.set(listOf(/* Plugin Dependencies */))
+    //com.intellij.java
 }
 
 tasks {
