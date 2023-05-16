@@ -16,6 +16,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+/**
+ * 笔记详情面板
+ */
 public class NoteDetailPanel extends JPanel {
     private JLabel titleLabel;
     private JLabel filePathLabel;

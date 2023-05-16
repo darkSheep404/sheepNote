@@ -3,7 +3,10 @@ package com.darksheep.sheepnote.toolWindow;
 import com.darksheep.sheepnote.config.AddNoteEventListener;
 import com.darksheep.sheepnote.config.NoteDataRepository;
 import com.darksheep.sheepnote.data.NoteData;
-import com.darksheep.sheepnote.editor.NoteDataHandler;
+import com.darksheep.sheepnote.editor.failtest.NoteDataHandler;
+import com.darksheep.sheepnote.editor.utils.EditorHelper;
+import com.darksheep.sheepnote.toolWindow.divider.CustomSplitPaneUI;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -24,6 +27,7 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
     private JTextField searchTextField = new JFormattedTextField();
     private JButton sortByCreateTimeButton = new JButton("按更新时间排序");
     private JButton sortByUpdateTimeButton = new JButton("按创建时间排序");
+    private JButton deleteButton = new JButton("删除笔记");
     private JPanel noteListWrapperPanel = new JPanel();
     private JTextArea selectCodeTextArea = new JTextArea();
 
@@ -44,6 +48,7 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
         buttonPanel.setLayout(new FlowLayout());
         buttonPanel.add(sortByCreateTimeButton);
         buttonPanel.add(sortByUpdateTimeButton);
+        buttonPanel.add(deleteButton);
 
         // 设置左侧面板内容
         JPanel leftPanel = new JPanel(new BorderLayout());
@@ -58,7 +63,8 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
         noteDataHandler = new NoteDataHandler(project);
 
         JSplitPane mainPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
-        mainPanel.setDividerLocation(200);
+        mainPanel.setResizeWeight(0.5);
+        mainPanel.setUI(new CustomSplitPaneUI());
 
         Content toolsWindowContent = toolWindow.getContentManager().getFactory().createContent(mainPanel, "", false);
         toolWindow.getContentManager().addContent(toolsWindowContent);
@@ -109,8 +115,8 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
         rightPanel.setNoteDetail(noteListModel.get(0));
 
         // 初始化 NoteListController
-        noteListController = new NoteListController(noteListModel, noteList, searchTextField, sortByCreateTimeButton, sortByUpdateTimeButton,rightPanel);
-
+        noteListController = new NoteListController(noteListModel, noteList, searchTextField, sortByCreateTimeButton, sortByUpdateTimeButton,deleteButton,rightPanel);
+        noteListController.project=project;
         // NoteListController 订阅添加笔记事件（添加到列表的第一个位置）
         MessageBus messageBus = project.getMessageBus();
         messageBus.connect(toolWindow.getDisposable()).subscribe(AddNoteEventListener.ADD_NOTE_TOPIC, noteData -> {
@@ -119,6 +125,8 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
             noteList.updateUI();
             noteList.setSelectedIndex(0);
             noteList.ensureIndexIsVisible(0);
+            Editor activeEditor = EditorHelper.getActiveEditor(project);
+            EditorHelper.drawNoteAddNoteNumber(activeEditor,noteData);
         });
     }
     public static NoteDataHandler getNoteDataHandler() {
@@ -128,4 +136,15 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
    /* public static List<NoteData> getNoteList(){
         return noteList;
     }*/
+
+    public void selectNoteInList(NoteData noteData) {
+        for (int i = 0; i < noteListModel.getSize(); i++) {
+            NoteData currentNote = noteListModel.get(i);
+            if (noteData.id == currentNote.id) {
+                noteList.setSelectedIndex(i);
+                noteList.ensureIndexIsVisible(i);
+                break;
+            }
+        }
+    }
 }

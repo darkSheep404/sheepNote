@@ -2,6 +2,7 @@ package com.darksheep.sheepnote.editor;
 
 import com.darksheep.sheepnote.config.NoteDataRepository;
 import com.darksheep.sheepnote.data.NoteData;
+import com.darksheep.sheepnote.editor.utils.EditorHelper;
 import com.darksheep.sheepnote.toolWindow.NoteListToolWindowFactory;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorCustomElementRenderer;
@@ -60,15 +61,7 @@ public class CustomEditorFileOpenedListener implements FileEditorManagerListener
         }
 
         for (NoteData noteData : noteDataList) {
-            //IDEA 行号从0开始 需要减一
-            int targetLineNumber = noteData.noteLineNumber -1;
-            //避免行号越界
-            if(editor.getDocument().getLineCount() - 1 < targetLineNumber)
-                continue;
-            //根据行号绘制文本
-            int lineEndOffset = editor.getDocument().getLineEndOffset(targetLineNumber);
-            EditorCustomElementRenderer renderer = new CustomTextRenderer(noteData.noteTitle);
-            editor.getInlayModel().addAfterLineEndElement(lineEndOffset, true, renderer);
+            EditorHelper.drawNoteAddNoteNumber(editor,noteData);
         }
     }
 

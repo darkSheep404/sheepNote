@@ -3,6 +3,8 @@ package com.darksheep.sheepnote.data;
 import java.util.Date;
 
 public class NoteData {
+
+    public Integer id;
     public String noteTitle;
     public String noteFilePath;
     public int noteLineNumber;
