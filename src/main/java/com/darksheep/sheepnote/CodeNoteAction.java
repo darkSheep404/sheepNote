@@ -117,7 +117,8 @@ public class CodeNoteAction extends AnAction {
             }
             try{
                 NoteData noteData = new NoteData(title,filePath,startLine, note);
-                NoteDataRepository.insert(noteData);
+                int id = NoteDataRepository.insert(noteData);
+                noteData.id = id;
                 // 发布事件以刷新 UI
                 MessageBus messageBus = currentProject.getMessageBus();
                 messageBus.syncPublisher(AddNoteEventListener.ADD_NOTE_TOPIC).onAddNoteEvent(noteData);
