@@ -26,10 +26,6 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="darkSheepNote" secondary="true" anchor="right"
                     factoryClass="com.darksheep.sheepnote.toolWindow.NoteListToolWindowFactory"/>
-      <!--  <postStartupActivity  implementation="com.darksheep.sheepnote.editor.failtest.CustomNewFileListener"/>
-&lt;!&ndash;        <annotator language="JAVA" implementationClass="com.darksheep.sheepnote.editor.failtest.CustomAnnotator"/>&ndash;&gt;
-&lt;!&ndash;  gpt给出标签不可用 参照官方文档修改     https://plugins.jetbrains.com/docs/intellij/line-marker-provider.html#register-the-line-marker-provider&ndash;&gt;
-        <codeInsight.lineMarkerProvider  implementationClass="com.darksheep.sheepnote.editor.failtest.CustomGutterIconProvider"/>-->
     </extensions>
     <actions>
         <action id="com.darksheep.sheepnote.CodeNoteAction"
@@ -37,18 +33,8 @@
                 text="Add Note to Code"
                 description="Add a note to the selected code">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
-<!--            <keyboard-shortcut first-keystroke="control alt N"/>-->
         </action>
     </actions>
-    <!-- 以下两种监听器的尝试失效了   -->
-   <!-- <applicationListeners>
-        <listener class="com.darksheep.sheepnote.editor.CustomNoteEditorMouseListenerer"
-                  topic="com.intellij.openapi.editor.event.EditorFactoryListener"/>
-    </applicationListeners>-->
- <!--   <projectListeners>
-        <listener class="com.darksheep.sheepnote.editor.failtest.NoteEditorMouseListener"
-                  topic="com.intellij.openapi.editor.event.EditorFactoryListener"/>
-    </projectListeners>-->
     <applicationListeners>
         <listener topic="com.intellij.openapi.fileEditor.FileEditorManagerListener" class="com.darksheep.sheepnote.editor.CustomEditorFileOpenedListener"/>
     </applicationListeners>

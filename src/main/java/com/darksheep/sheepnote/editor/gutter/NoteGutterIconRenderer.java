@@ -1,23 +1,17 @@
 package com.darksheep.sheepnote.editor.gutter;
 
 import com.darksheep.sheepnote.data.NoteData;
-import com.darksheep.sheepnote.toolWindow.NoteListToolWindowFactory;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.JBColor;
-import com.intellij.util.IconUtil;
 import com.intellij.util.ui.EmptyIcon;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
 
 public class NoteGutterIconRenderer extends GutterIconRenderer {
     private final Icon noteIcon;
