@@ -8,7 +8,7 @@
     <name>SheepNotes</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="sfa_freshman@qq.com" url="https://www.darksheep.xyz">DarkSheep404</vendor>
+    <vendor email="sfa_freshman@qq.com" url="https://github.com/darkSheep404">DarkSheep404</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
@@ -21,11 +21,13 @@
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.java</depends>
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="darkSheepNote" secondary="true" anchor="right"
                     factoryClass="com.darksheep.sheepnote.toolWindow.NoteListToolWindowFactory"/>
+        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.darksheep.sheepnote.editor.gutter.CustomGutterIconProvider"/>
     </extensions>
     <actions>
         <action id="com.darksheep.sheepnote.CodeNoteAction"
@@ -38,5 +40,4 @@
     <applicationListeners>
         <listener topic="com.intellij.openapi.fileEditor.FileEditorManagerListener" class="com.darksheep.sheepnote.editor.CustomEditorFileOpenedListener"/>
     </applicationListeners>
-
 </idea-plugin>

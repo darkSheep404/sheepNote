@@ -46,7 +46,8 @@ dependencies {
 intellij {
     version.set("2021.3")
     type.set("IC") // Target IDE Platform
-    plugins.set(listOf(/* Plugin Dependencies */))
+    //这里应用了java插件 java语言类型才不会报错
+    plugins.set(listOf("java"))
     //com.intellij.java
 }
 

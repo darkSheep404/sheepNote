@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Date;
 
 public class CodeNoteAction extends AnAction {
 
@@ -77,31 +78,50 @@ public class CodeNoteAction extends AnAction {
      */
     private JPanel createNotePanel(String selectedText, DialogBuilder dialogBuilder,int startLine,String filePath) {
         Project currentProject = IdeFocusManager.getGlobalInstance().getLastFocusedFrame().getProject();
-        // 创建一个笔记面板，使用 BorderLayout 布局
-        JPanel notePanel = new JPanel(new BorderLayout());
+        JPanel notePanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        gbc.insets = new Insets(2, 2, 10, 2);
 
-        // 添加一个标签，提示用户输入笔记标题
-        notePanel.add(new JLabel("笔记标题："), BorderLayout.NORTH);
-        // 创建一个文本框，用于输入笔记标题
-        JTextField titleTextField = new JTextField("测试");
-        // 把文本框添加到笔记面板中
-        notePanel.add(titleTextField, BorderLayout.SOUTH);
+        // Note title label
+        JLabel titleLabel = new JLabel("Note Title");
+        notePanel.add(titleLabel, gbc);
+
+        // Note title input
+        JTextField titleTextField = new JTextField();
+        gbc.gridy = 1;
+        notePanel.add(titleTextField, gbc);
+
+        // Code label
+        JLabel codeLabel = new JLabel("Code");
+        gbc.gridy = 2;
+        notePanel.add(codeLabel,gbc);
+
+        // Code input
+        JTextArea codeTextArea = new JTextArea();
+        codeTextArea.setLineWrap(true);
+        codeTextArea.setWrapStyleWord(true);
+        JBScrollPane scrollPane = new JBScrollPane(codeTextArea);
+        gbc.gridy = 3;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 1;
+        codeTextArea.setText(selectedText);
+        codeTextArea.setFont(codeTextArea.getFont().deriveFont(16f));
+        FontMetrics fontMetrics = titleTextField.getFontMetrics(titleTextField.getFont());
+        int textWidth = fontMetrics.stringWidth(codeTextArea.getText()) + 20; // 附加一些额外的宽度以确保留有空间
+        int newWidth = Math.max(textWidth, 300); // 限制对话框宽度至少为300像素
+        Dimension newDimension = new Dimension(newWidth, 200);
+        notePanel.setPreferredSize(newDimension);
+        notePanel.add(scrollPane, gbc);
 
         /**
          * 笔记内容输入框:滚动面板
          */
-        // 创建一个滚动面板
-        JBScrollPane scrollPane = new JBScrollPane();
-        // 创建一个文本域
-        JBTextArea noteTextArea = new JBTextArea();
-        // 设置文本域的字体大小
-        noteTextArea.setFont(noteTextArea.getFont().deriveFont(16f));
-        // 设置文本域的默认内容为选中的文本
-        noteTextArea.setText(selectedText);
-        // 把文本域添加到滚动面板中
-        scrollPane.setViewportView(noteTextArea);
-        // 把滚动面板添加到笔记面板中
-        notePanel.add(scrollPane, BorderLayout.CENTER);
+      /* */
 
 
         // 给 DialogBuilder 添加确认按钮的监听器，用于保存笔记
@@ -109,16 +129,18 @@ public class CodeNoteAction extends AnAction {
             // 获取用户输入的笔记标题
             String title = titleTextField.getText();
             // 获取用户输入的笔记内容
-            String note = noteTextArea.getText();
+            String code = codeTextArea.getText();
             // 如果笔记标题或笔记内容为空，弹出提示
-            if (StringUtil.isEmpty(title) || StringUtil.isEmpty(note)) {
+            if (StringUtil.isEmpty(title) || StringUtil.isEmpty(code)) {
                 Messages.showMessageDialog("Please enter both title and note", "Error", Messages.getErrorIcon());
                 return;
             }
             try{
-                NoteData noteData = new NoteData(title,filePath,startLine, note);
+                NoteData noteData = new NoteData(title,filePath,startLine, code);
                 int id = NoteDataRepository.insert(noteData);
                 noteData.id = id;
+                noteData.createTime =new Date();
+                noteData.updateTime = new Date();
                 // 发布事件以刷新 UI
                 MessageBus messageBus = currentProject.getMessageBus();
                 messageBus.syncPublisher(AddNoteEventListener.ADD_NOTE_TOPIC).onAddNoteEvent(noteData);
@@ -132,7 +154,7 @@ public class CodeNoteAction extends AnAction {
             dialogBuilder.getDialogWrapper().close(DialogWrapper.OK_EXIT_CODE);
         });
         dialogBuilder.setCancelOperation(()->{
-            System.out.println(noteTextArea);
+            System.out.println(codeTextArea);
             dialogBuilder.getDialogWrapper().close(DialogWrapper.CANCEL_EXIT_CODE);
         });
 

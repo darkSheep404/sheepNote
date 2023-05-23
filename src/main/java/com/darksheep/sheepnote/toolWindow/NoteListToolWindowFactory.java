@@ -50,6 +50,8 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
         buttonPanel.add(sortByUpdateTimeButton);
         buttonPanel.add(deleteButton);
 
+        searchTextField.setPreferredSize(new Dimension(0, 10));
+        searchTextField.setMaximumSize(searchTextField.getPreferredSize());
         // 设置左侧面板内容
         JPanel leftPanel = new JPanel(new BorderLayout());
         leftPanel.add(buttonPanel, BorderLayout.NORTH);

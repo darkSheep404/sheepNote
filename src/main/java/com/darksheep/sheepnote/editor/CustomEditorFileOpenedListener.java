@@ -3,21 +3,15 @@ package com.darksheep.sheepnote.editor;
 import com.darksheep.sheepnote.config.NoteDataRepository;
 import com.darksheep.sheepnote.data.NoteData;
 import com.darksheep.sheepnote.editor.utils.EditorHelper;
-import com.darksheep.sheepnote.toolWindow.NoteListToolWindowFactory;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.EditorCustomElementRenderer;
-import com.intellij.openapi.editor.Inlay;
-import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.JBColor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.*;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.List;
@@ -72,28 +66,5 @@ public class CustomEditorFileOpenedListener implements FileEditorManagerListener
 
     @Override
     public void selectionChanged(@NotNull FileEditorManagerEvent event) {
-    }
-    class CustomTextRenderer implements EditorCustomElementRenderer {
-
-        private String text;
-
-        public CustomTextRenderer(String text) {
-            this.text = text;
-        }
-
-        @Override
-        public int calcWidthInPixels(@NotNull Inlay inlay) {
-            return 80;
-        }
-
-        @Override
-        public void paint(@NotNull Inlay inlay, @NotNull Graphics g, @NotNull Rectangle targetRegion, @NotNull TextAttributes textAttributes) {
-            Graphics2D g2d = (Graphics2D) g;
-            g2d.setColor(JBColor.yellow);
-            Font font = new Font("Microsoft YaHei", Font.PLAIN, g.getFont().getSize());
-            FontMetrics fontMetrics = g2d.getFontMetrics(font);
-            g2d.setFont(font);
-            g2d.drawString("//"+text, targetRegion.x, targetRegion.y + fontMetrics.getAscent());
-        }
     }
 }
