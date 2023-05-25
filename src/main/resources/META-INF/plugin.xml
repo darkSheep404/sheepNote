@@ -14,8 +14,13 @@
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    select code and make notes<br>
-    <em>notes call jump to code location</em>
+     A plugin which allow you to make notes for select codes,and click note to navigate to the code you selected to mark note,which will do helps to read and understand your project,and do notes base on code,you can sync nodes when change computer by copy the local data.sqllite file<br>
+
+     just use sheepNote plugin to select code, and make notes for them<br> 
+     notes will be dispalyed in darksheepNote toolsWindow <br>
+     you call search and manager your notes in darksheepNote toolsWindow<br>
+     Besides, it will display some icon on the line where you make notes at 
+    <em>notes will be stored at 'D:\sheepnote\data.sqllite' by default,delete it will leads to note lost </em>
   ]]></description>
 
     <!-- Product and plugin compatibility requirements.
