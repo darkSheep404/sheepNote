@@ -32,6 +32,8 @@ public class EditorHelper {
      */
     public static void removeTextRenderInEditor(NoteData noteData, Project project) {
         Editor activeEditor = getActiveEditor(project);
+        if(activeEditor ==null)
+            return;
         VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(activeEditor.getDocument());
         if (virtualFile == null) {
             return;

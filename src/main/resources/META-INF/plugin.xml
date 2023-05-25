@@ -30,8 +30,9 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="darkSheepNote" secondary="true" anchor="right"
-                    factoryClass="com.darksheep.sheepnote.toolWindow.NoteListToolWindowFactory"/>
+        <toolWindow id="darkSheepNote" secondary="true" anchor="left"
+                    factoryClass="com.darksheep.sheepnote.toolWindow.NoteListToolWindowFactory">
+        </toolWindow>
         <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.darksheep.sheepnote.editor.gutter.CustomGutterIconProvider"/>
     </extensions>
     <actions>

@@ -19,6 +19,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class NoteListToolWindowFactory implements ToolWindowFactory {
@@ -97,7 +98,13 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        if(noteDataList.size()==0){
+            NoteData noteData = new NoteData("this note will auto disappear after you take first note and restart idea", "D:/sheepnote/data.sqllite", 1, "this note will auto disappear after you take first note and restart idea");
+            noteData.id =-1;
+            noteData.createTime = new Date();
+            noteData.updateTime = new Date();
+            noteDataList.add(noteData);
+        }
         // 初始化笔记列表
         for (NoteData noteData : noteDataList) {
             noteListModel.addElement(noteData);
