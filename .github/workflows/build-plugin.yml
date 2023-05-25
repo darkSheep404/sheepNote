@@ -19,12 +19,13 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: '11'
+          distribution: 'adopt'  
 
       - name: Build plugin
         run: ./gradlew build
 
       - name: Archive plugin
-        run: zip -r plugin.zip <path_to_plugin_files>
+        run: zip -r ${{ github.workspace }}/plugin.zip <path_to_plugin_files>
 
       - name: Create Release
         id: create_release
@@ -51,6 +52,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./plugin.zip
+          asset_path: ${{ github.workspace }}/plugin.zip
           asset_name: plugin.zip
           asset_content_type: application/zip
