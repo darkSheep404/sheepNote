@@ -25,9 +25,12 @@ jobs:
 
       - name: Build plugin
         run: $GITHUB_WORKSPACE/gradlew buildPlugin
+      - name: Get plugin file path
+        id: get_plugin_file
+        run: echo "::set-output name=plugin_file::$(find ${{ github.workspace }}/build/distributions -name '*.zip' -type f)"
 
       - name: Archive plugin
-        run: zip -r ${{ github.workspace }}/plugin.zip .
+        run: zip -r ${{ github.workspace }}/plugin.zip ${{ steps.get_plugin_file.outputs.plugin_file }}
       - name: Generate version number
         id: version
         run: |
