@@ -30,7 +30,7 @@ jobs:
         run: echo "::set-output name=plugin_file::$(find ${{ github.workspace }}/build/distributions -name '*.zip' -type f)"
 
       - name: Archive plugin
-        run: zip -r ${{ github.workspace }}/plugin.zip ${{ steps.get_plugin_file.outputs.plugin_file }}
+        run: mv ${{ steps.get_plugin_file.outputs.plugin_file }} ${{ github.workspace }}/plugin.zip
       - name: Generate version number
         id: version
         run: |
