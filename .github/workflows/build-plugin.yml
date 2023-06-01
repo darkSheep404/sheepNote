@@ -20,12 +20,12 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'  
-
+      
       - name: Build plugin
         run: ./gradlew build
 
       - name: Archive plugin
-        run: zip -r ${{ github.workspace }}/plugin.zip <path_to_plugin_files>
+        run: zip -r ${{ github.workspace }}/plugin.zip .
 
       - name: Create Release
         id: create_release
