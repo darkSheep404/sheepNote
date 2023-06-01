@@ -24,7 +24,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build plugin
-        run: $GITHUB_WORKSPACE/gradlew build
+        run: $GITHUB_WORKSPACE/gradlew buildPlugin
 
       - name: Archive plugin
         run: zip -r ${{ github.workspace }}/plugin.zip .
