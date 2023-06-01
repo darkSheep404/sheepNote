@@ -28,17 +28,33 @@ jobs:
 
       - name: Archive plugin
         run: zip -r ${{ github.workspace }}/plugin.zip .
+      - name: Generate version number
+        id: version
+        run: |
+          DATE=$(date +'%Y%m%d')
+          RELEASES=$(curl -s -H "Authorization: Bearer ${{ secrets.MY_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases")
+          VERSION="v${DATE}.1"
 
+          if [[ $RELEASES == *"$VERSION"* ]]; then
+            COUNT=2
+            while [[ $RELEASES == *"${VERSION%.*}.${COUNT}"* ]]; do
+              COUNT=$((COUNT + 1))
+            done
+            VERSION="${VERSION%.*}.${COUNT}"
+          fi
+
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: ${{ env.VERSION }}
+          release_name: Release ${{ env.VERSION }}
           body: |
-            Release ${{ github.ref }}
+            Release ${{ env.VERSION }}
           draft: false
           prerelease: false
 
