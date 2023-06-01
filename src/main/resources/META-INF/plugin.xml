@@ -24,8 +24,8 @@
     <strong>notes will be stored at 'D:\sheepnote\data.sqllite' by default,delete it will leads to note lost <strong>
     <strong>if it do help to you, or any suggestions,pls star/issue/pr in below github repo </strong>
     <strong><a href ="https://github.com/darkSheep404/sheepNote"> github仓库</a></strong>
-    <img src ="https://plugins.jetbrains.com/files/21869/preview_7a83b6d9-ef33-4d19-8cea-7b2b2cb41729"><img>
-    <img src ="https://plugins.jetbrains.com/files/21869/preview_32d9d92b-40e6-4362-ad3f-d71923ea41d9"><img>
+    <img src ="https://plugins.jetbrains.com/files/21869/preview_7a83b6d9-ef33-4d19-8cea-7b2b2cb41729.png"><img>
+    <img src ="https://plugins.jetbrains.com/files/21869/preview_32d9d92b-40e6-4362-ad3f-d71923ea41d9.png"><img>
 
   ]]></description>
 
@@ -37,7 +37,7 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="darkSheepNote" secondary="true" anchor="right"
+        <toolWindow id="sheepNote" secondary="true" anchor="right"
                     factoryClass="com.darksheep.sheepnote.toolWindow.NoteListToolWindowFactory"/>
         <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.darksheep.sheepnote.editor.gutter.CustomGutterIconProvider"/>
     </extensions>
@@ -45,6 +45,7 @@
         <action id="com.darksheep.sheepnote.CodeNoteAction"
                 class="com.darksheep.sheepnote.CodeNoteAction"
                 text="Add Note to Code"
+                icon= "com.darksheep.sheepnote.icon.PluginIcons.INVISIBLE_ICON"
                 description="Add a note to the selected code">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>

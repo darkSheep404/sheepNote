@@ -23,7 +23,7 @@ import java.util.List;
 
 public class NoteListToolWindowFactory implements ToolWindowFactory {
 
-    public static final String TOOL_WINDOW_ID = "darkSheepNote";
+    public static final String TOOL_WINDOW_ID = "sheepNote";
     private JTextField searchTextField = new JFormattedTextField();
     private JButton sortByCreateTimeButton = new JButton("按更新时间排序");
     private JButton sortByUpdateTimeButton = new JButton("按创建时间排序");
