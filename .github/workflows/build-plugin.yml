@@ -20,9 +20,11 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'  
-      
+      - name: Grant execute permission to gradlew
+        run: chmod +x gradlew
+
       - name: Build plugin
-        run: ./gradlew build
+        run: $GITHUB_WORKSPACE/gradlew build
 
       - name: Archive plugin
         run: zip -r ${{ github.workspace }}/plugin.zip .
