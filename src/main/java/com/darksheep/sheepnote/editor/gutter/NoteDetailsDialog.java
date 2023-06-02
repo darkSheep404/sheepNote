@@ -34,7 +34,7 @@ public class NoteDetailsDialog extends DialogWrapper {
         JPanel panel = new JPanel(new BorderLayout());
         String createTime = dateFormat.format(noteData.createTime);
         String updateTime = dateFormat.format(noteData.updateTime);
-        String details = String.format("Title: %s<br/>Creation Time: %s<br/> Update Time:%s", noteData.noteTitle, createTime,updateTime);
+        String details = String.format("Title: %s<br/>Create At: %s<br/> Update At:%s", noteData.noteTitle, createTime,updateTime);
         JBLabel label = new JBLabel("<html>" + details + "</html>");
         panel.add(label, BorderLayout.CENTER);
         return panel;

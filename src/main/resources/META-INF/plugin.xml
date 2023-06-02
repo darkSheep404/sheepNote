@@ -36,11 +36,11 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
     <!-- 添加此处 会导致 需要依赖java webstorm使用不了 待fix -->
-    <depends>com.intellij.java</depends>
+    <!--<depends>com.intellij.java</depends>-->
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="sheepNote" secondary="true" anchor="right"
+        <toolWindow id="sheepNote" secondary="true" anchor="right" icon= "AllIcons.Actions.IntentionBulb"
                     factoryClass="com.darksheep.sheepnote.toolWindow.NoteListToolWindowFactory"/>
         <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.darksheep.sheepnote.editor.gutter.CustomGutterIconProvider"/>
     </extensions>
@@ -48,7 +48,7 @@
         <action id="com.darksheep.sheepnote.CodeNoteAction"
                 class="com.darksheep.sheepnote.CodeNoteAction"
                 text="Add Note to Code"
-                icon= "com.darksheep.sheepnote.icon.PluginIcons.INVISIBLE_ICON"
+                icon= "AllIcons.Actions.IntentionBulb"
                 description="Add a note to the selected code">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>

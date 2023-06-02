@@ -1,4 +1,4 @@
-package com.darksheep.sheepnote.editor.utils;
+package com.darksheep.sheepnote.icon;
 
 import com.intellij.openapi.util.IconLoader;
 

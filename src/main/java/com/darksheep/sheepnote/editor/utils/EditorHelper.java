@@ -99,10 +99,10 @@ public class EditorHelper {
         public void paint(@NotNull Inlay inlay, @NotNull Graphics g, @NotNull Rectangle targetRegion, @NotNull TextAttributes textAttributes) {
             Graphics2D g2d = (Graphics2D) g;
             g2d.setColor(JBColor.yellow);
-            Font font = new Font("Microsoft YaHei", Font.PLAIN, g.getFont().getSize());
+            Font font = new Font("Microsoft YaHei", Font.ROMAN_BASELINE, g.getFont().getSize());
             FontMetrics fontMetrics = g2d.getFontMetrics(font);
             g2d.setFont(font);
-            g2d.drawString("//"+text, targetRegion.x, targetRegion.y + fontMetrics.getAscent());
+            g2d.drawString("// "+text, targetRegion.x, targetRegion.y + fontMetrics.getAscent());
         }
     }
 

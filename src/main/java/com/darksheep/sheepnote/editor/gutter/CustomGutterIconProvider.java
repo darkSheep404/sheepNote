@@ -2,26 +2,20 @@ package com.darksheep.sheepnote.editor.gutter;
 
 import com.darksheep.sheepnote.config.NoteDataRepository;
 import com.darksheep.sheepnote.data.NoteData;
-import com.darksheep.sheepnote.editor.utils.SimpleIcons;
+import com.darksheep.sheepnote.icon.SimpleIcons;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.MessageType;
-import com.intellij.openapi.ui.popup.Balloon;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.psi.PsiElement;
-import com.intellij.ui.awt.RelativePoint;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.event.MouseEvent;
-import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,7 +70,7 @@ public class CustomGutterIconProvider implements LineMarkerProvider {
             }
             int iconOffset = 0;
             for (NoteData noteData:matchingNotes) { // 为每个匹配的笔记创建一个 LineMarkerInfo
-                Icon icon = SimpleIcons.FILE;
+                Icon icon = AllIcons.Actions.IntentionBulb;
                 lineAndFilePath.add(StringUtils.join(noteData.getNoteFilePath(),noteData.noteTitle));
                 LineMarkerInfo<?> lineMarkerInfo = new NoteLineMarkerInfo(
                         element,
