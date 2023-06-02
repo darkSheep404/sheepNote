@@ -22,6 +22,7 @@
      Besides, it will display some icon on the line where you make notes at <br>
 
     <strong>notes will be stored at 'D:\sheepnote\data.sqllite' by default,</strong><br>
+    <strong>And due to this, this plugin cannot work on mac or win without "D:"</strong>
     <strong>delete it will leads to note lost </strong>
     <br>
     <br>
