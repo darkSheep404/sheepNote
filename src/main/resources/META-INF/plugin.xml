@@ -15,30 +15,40 @@
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
      A plugin which allow you to make notes for select codes,and click note to navigate to the code you selected to mark note,which will do helps to read and understand your project,and do notes base on code,you can sync nodes when change computer by copy the local data.sqllite file<br>
-
+        
      just use sheepNote plugin to select code, and make notes for them<br> 
-     notes will be dispalyed in darksheepNote toolsWindow <br>
-     you call search and manager your notes in darksheepNote toolsWindow<br>
-     Besides, it will display some icon on the line where you make notes at 
-    <em>notes will be stored at 'D:\sheepnote\data.sqllite' by default,delete it will leads to note lost </em>
+     notes will be dispalyed in sheepNote toolsWindow <br>
+     you call search and manager your notes in sheepNote toolsWindow<br>
+     Besides, it will display some icon on the line where you make notes at <br>
+
+    <strong>notes will be stored at 'D:\sheepnote\data.sqllite' by default,</strong><br>
+    <strong>delete it will leads to note lost </strong>
+    <br>
+    <br>
+    <strong>if this plugin do help to you, or you have any suggestions,pls star/issue/pr in below github repo </strong>
+    <strong><a href ="https://github.com/darkSheep404/sheepNote"> github repository</a></strong>
+    <img src ="https://plugins.jetbrains.com/files/21869/preview_7a83b6d9-ef33-4d19-8cea-7b2b2cb41729"/>
+    <img src ="https://plugins.jetbrains.com/files/21869/preview_32d9d92b-40e6-4362-ad3f-d71923ea41d9"/>
+
   ]]></description>
 
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
+    <!-- 添加此处 会导致 需要依赖java webstorm使用不了 待fix -->
     <depends>com.intellij.java</depends>
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="darkSheepNote" secondary="true" anchor="left"
-                    factoryClass="com.darksheep.sheepnote.toolWindow.NoteListToolWindowFactory">
-        </toolWindow>
+        <toolWindow id="sheepNote" secondary="true" anchor="right"
+                    factoryClass="com.darksheep.sheepnote.toolWindow.NoteListToolWindowFactory"/>
         <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.darksheep.sheepnote.editor.gutter.CustomGutterIconProvider"/>
     </extensions>
     <actions>
         <action id="com.darksheep.sheepnote.CodeNoteAction"
                 class="com.darksheep.sheepnote.CodeNoteAction"
                 text="Add Note to Code"
+                icon= "com.darksheep.sheepnote.icon.PluginIcons.INVISIBLE_ICON"
                 description="Add a note to the selected code">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
