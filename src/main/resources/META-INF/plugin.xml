@@ -40,7 +40,7 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="sheepNote" secondary="true" anchor="right" icon= "AllIcons.Actions.IntentionBulb"
+        <toolWindow id="sheepNote"  anchor="bottom"  icon= "AllIcons.Actions.IntentionBulb"
                     factoryClass="com.darksheep.sheepnote.toolWindow.NoteListToolWindowFactory"/>
         <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.darksheep.sheepnote.editor.gutter.CustomGutterIconProvider"/>
     </extensions>
