@@ -47,7 +47,14 @@ public class NoteDetailPanel extends JPanel{
 
     private NoteData noteData;
 
+    private Project currentProject;
+
+    private JScrollPane scrollPane;
+
+    private GridBagConstraints gbc = new GridBagConstraints();
+
     public NoteDetailPanel() {
+        currentProject = CommonDataKeys.PROJECT.getData(DataManager.getInstance().getDataContext(this));
         setLayout(new GridBagLayout());
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -76,7 +83,6 @@ public class NoteDetailPanel extends JPanel{
         // File path + line number
         filePathLabel = new HyperlinkLabel();
         filePathLabel.addHyperlinkListener(e -> {
-            Project currentProject = CommonDataKeys.PROJECT.getData(DataManager.getInstance().getDataContext(this));
             if (currentProject == null || noteData == null) {
                 return;
             }
@@ -106,13 +112,12 @@ public class NoteDetailPanel extends JPanel{
 
         // Selected code
         codeEditor = createCodeEditor();
-        JScrollPane scrollPane = ScrollPaneFactory.createScrollPane(codeEditor.getComponent(), true);
+        scrollPane = ScrollPaneFactory.createScrollPane(codeEditor.getComponent(), true);
         add(scrollPane, gbc);
     }
 
     private Editor createCodeEditor() {
         EditorFactory editorFactory = EditorFactory.getInstance();
-        Project currentProject = CommonDataKeys.PROJECT.getData(DataManager.getInstance().getDataContext(this));
         Editor editor_base = editorFactory.createEditor(createDocument(), currentProject);
         EditorImpl editor = (EditorImpl) editor_base; // Create the Editor
         editor.getSettings().setFoldingOutlineShown(false);
@@ -122,14 +127,18 @@ public class NoteDetailPanel extends JPanel{
 
         ProjectManager.getInstance().addProjectManagerListener(new ProjectManagerListener() {
             @Override
-            public void projectClosing(@NotNull Project project) {
-                System.out.println("begin dispose");
-                System.out.println(codeEditor);
+            public void projectClosed(@NotNull Project project) {
                 if(codeEditor!=null){
                     EditorFactory.getInstance().releaseEditor(codeEditor);
-                   /* codeEditor = null;*/
+                    codeEditor = null;
                 }
-                ProjectManagerListener.super.projectClosing(project);
+                ProjectManagerListener.super.projectClosed(project);
+            }
+
+            @Override
+            public void projectOpened(@NotNull Project project) {
+                currentProject = project;
+                ProjectManagerListener.super.projectOpened(project);
             }
         });
       return editor;
@@ -141,9 +150,13 @@ public class NoteDetailPanel extends JPanel{
         return document;
     }
     private void setEditorContent(String content) {
-       /* if(codeEditor == null){
+        if(codeEditor == null){
+            remove(scrollPane);
+
             codeEditor = createCodeEditor();
-        }*/
+            scrollPane = ScrollPaneFactory.createScrollPane(codeEditor.getComponent(), true);
+            add(scrollPane, gbc);
+        }
         if (codeEditor != null) {
             /**
              * 设置 文本必须在ApplicationManager.getApplication().runWriteAction中设置 否则会报错
@@ -156,8 +169,6 @@ public class NoteDetailPanel extends JPanel{
 
                 String fileExtension = FilenameUtils.getExtension(noteData.noteFilePath);
                 FileType fileType = FileTypeRegistry.getInstance().getFileTypeByExtension(fileExtension);
-                Project currentProject = CommonDataKeys.PROJECT.getData(DataManager.getInstance().getDataContext(this));
-
                 SyntaxHighlighter syntaxHighlighter = SyntaxHighlighterFactory.getSyntaxHighlighter(fileType, currentProject,null);
                 // Get editor colors scheme
                 EditorColorsScheme colorsScheme = EditorColorsManager.getInstance().getGlobalScheme();
@@ -182,6 +193,7 @@ public class NoteDetailPanel extends JPanel{
         updateTimeLabel.setText("Update time: " + dateFormat.format(noteData.updateTime));
 
         filePathLabel.setHyperlinkText(noteData.noteFilePath + "#" + noteData.noteLineNumber);
+        //注释此处 也会 在打开新的窗口后 不更新右侧ui
         setEditorContent(noteData.selectCode);
         //codeTextArea.setText(noteData.selectCode);
     }
