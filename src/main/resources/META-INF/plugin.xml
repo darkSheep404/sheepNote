@@ -26,13 +26,25 @@
     <strong>delete it will leads to note lost </strong>
     <br>
     <br>
-    <strong>if this plugin do help to you, or you have any suggestions,pls star/issue/pr in below github repo </strong>
-    <strong><a href ="https://github.com/darkSheep404/sheepNote"> github repository</a></strong>
+    <strong>if this plugin do help to you, or you have any suggestions,pls star/issue/pr in below github repo </strong><br>
+    <strong><a href ="https://github.com/darkSheep404/sheepNote">this github repository</a></strong><br>
     <img src ="https://plugins.jetbrains.com/files/21869/preview_7a83b6d9-ef33-4d19-8cea-7b2b2cb41729"/>
     <img src ="https://plugins.jetbrains.com/files/21869/preview_32d9d92b-40e6-4362-ad3f-d71923ea41d9"/>
 
   ]]></description>
-
+    <change-notes>
+        <![CDATA[
+      <ul>
+        <li><b>2023.06.05</b>
+            use editor with SyntaxHighlighter to display selectCode instead of text area,set toolsWindow default bottom.<br>
+            使用编辑器替换text area 来显示选中的代码,toolWindows 默认放在底部
+        </li>
+        <li><b>1.0.0</b> implement base feature<br>
+            实现基础功能
+        </li>
+      </ul>
+    ]]>
+    </change-notes>
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>

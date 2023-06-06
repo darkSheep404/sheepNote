@@ -165,6 +165,7 @@ public class NoteDetailPanel extends JPanel{
              * 	at com.intellij.openapi.application.impl.ApplicationImpl.assertWriteAccessAllowed
              */
             ApplicationManager.getApplication().runWriteAction(() -> {
+                codeEditor.getDocument().setReadOnly(false);
                 codeEditor.getDocument().setText(noteData.selectCode);
 
                 String fileExtension = FilenameUtils.getExtension(noteData.noteFilePath);
@@ -179,6 +180,7 @@ public class NoteDetailPanel extends JPanel{
                 highlighter.setText(codeEditor.getDocument().getImmutableCharSequence());
                 highlighter.setColorScheme(colorsScheme);
                 ((EditorImpl) codeEditor).setHighlighter(highlighter);
+                codeEditor.getDocument().setReadOnly(true);
             });
 
         }
