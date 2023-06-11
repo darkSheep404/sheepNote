@@ -38,7 +38,7 @@ public class CodeNoteAction extends AnAction {
         String selectedText = editor.getSelectionModel().getSelectedText();
         // 如果没有选中代码，弹出提示
         if (StringUtil.isEmpty(selectedText)) {
-            Messages.showMessageDialog("请先选中要做笔记的代码！", "提示", Messages.getInformationIcon());
+            Messages.showMessageDialog("Please select code to make note for", "notice", Messages.getInformationIcon());
             return;
         }
 
@@ -55,11 +55,11 @@ public class CodeNoteAction extends AnAction {
         // 创建一个 DialogBuilder 对象
         DialogBuilder dialogBuilder = new DialogBuilder(e.getProject());
         // 设置 Dialog 的标题
-        dialogBuilder.setTitle("代码笔记");
+        dialogBuilder.setTitle("code note");
         // 设置 Dialog 的内容
         dialogBuilder.setCenterPanel(createNotePanel(selectedText, dialogBuilder,startLine,filePath));
         // 添加确认按钮
-        dialogBuilder.addOkAction().setText("保存");
+        dialogBuilder.addOkAction().setText("save");
         // 添加取消按钮
         dialogBuilder.addCancelAction();
         // 显示 Dialog

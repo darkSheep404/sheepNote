@@ -5,11 +5,17 @@ import com.darksheep.sheepnote.config.NoteDataRepository;
 import com.darksheep.sheepnote.data.NoteData;
 import com.darksheep.sheepnote.editor.failtest.NoteDataHandler;
 import com.darksheep.sheepnote.editor.utils.EditorHelper;
+import com.darksheep.sheepnote.icon.PluginIcons;
 import com.darksheep.sheepnote.toolWindow.divider.CustomSplitPaneUI;
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.content.Content;
 import com.intellij.util.messages.MessageBus;
@@ -21,6 +27,8 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static com.intellij.analysis.JvmAnalysisBundle.message;
 
 public class NoteListToolWindowFactory implements ToolWindowFactory {
 
@@ -69,8 +77,39 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
         mainPanel.setResizeWeight(0.5);
         mainPanel.setUI(new CustomSplitPaneUI());
 
+        toolWindow.setTitleActions(List.of(
+                initTipsAction()
+        ));
+
         Content toolsWindowContent = toolWindow.getContentManager().getFactory().createContent(mainPanel, "", false);
         toolWindow.getContentManager().addContent(toolsWindowContent);
+    }
+    @NotNull
+    private DumbAwareAction initTipsAction() {
+        return new DumbAwareAction("about and tips", "", AllIcons.Actions.IntentionBulb) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
+                DialogBuilder dialogBuilder = new DialogBuilder(anActionEvent.getProject());
+                // 设置 Dialog 的标题
+                dialogBuilder.setTitle("About and Tips");
+                JPanel panel = new JPanel(new BorderLayout());
+                String details ="<ul style=\"font-size:14px\">\n" +
+                        "        <li><strong>this plugin github Repository:</strong> <a href='https://github.com/darkSheep404/sheepNote'><span>https://github.com/darkSheep404/sheepNote</span></a></li>\n" +
+                        "        <li><span>please feel free to <strong>PR/Issue</strong> this repository for any <strong>question and bugs</strong></span></li>\n" +
+                        "        <li><span>if this note do helps to you ,please feel free to <strong>a star to this repo</strong></span></a></li>       \n" +
+                        "    </ul>";
+                JBLabel label = new JBLabel("<html>" + details + "</html>");
+                //设置可复制
+                label.setCopyable(true);
+                panel.add(label, BorderLayout.CENTER);
+                // 设置 Dialog 的内容
+                dialogBuilder.setCenterPanel(panel);
+                // 添加取消按钮
+                dialogBuilder.addCancelAction();
+                // 显示 Dialog
+                dialogBuilder.show();
+            }
+        };
     }
 
     /**

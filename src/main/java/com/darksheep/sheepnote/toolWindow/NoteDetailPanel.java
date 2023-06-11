@@ -2,7 +2,6 @@ package com.darksheep.sheepnote.toolWindow;
 
 import com.darksheep.sheepnote.data.NoteData;
 import com.intellij.ide.DataManager;
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
@@ -20,14 +19,11 @@ import com.intellij.openapi.fileTypes.FileTypeRegistry;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.openapi.fileTypes.SyntaxHighlighterFactory;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ScrollPaneFactory;
 import org.apache.commons.io.FilenameUtils;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -48,8 +44,6 @@ public class NoteDetailPanel extends JPanel{
     private NoteData noteData;
 
     private Project currentProject;
-
-    private JScrollPane scrollPane;
 
     private GridBagConstraints gbc = new GridBagConstraints();
 
@@ -83,6 +77,7 @@ public class NoteDetailPanel extends JPanel{
         // File path + line number
         filePathLabel = new HyperlinkLabel();
         filePathLabel.addHyperlinkListener(e -> {
+            Project currentProject = CommonDataKeys.PROJECT.getData(DataManager.getInstance().getDataContext(this));
             if (currentProject == null || noteData == null) {
                 return;
             }
@@ -112,7 +107,7 @@ public class NoteDetailPanel extends JPanel{
 
         // Selected code
         codeEditor = createCodeEditor();
-        scrollPane = ScrollPaneFactory.createScrollPane(codeEditor.getComponent(), true);
+        JScrollPane scrollPane = ScrollPaneFactory.createScrollPane(codeEditor.getComponent(), true);
         add(scrollPane, gbc);
     }
 
@@ -125,13 +120,14 @@ public class NoteDetailPanel extends JPanel{
         editor.getSettings().setLineNumbersShown(true);
         editor.getSettings().setIndentGuidesShown(false);
 
-        ProjectManager.getInstance().addProjectManagerListener(new ProjectManagerListener() {
+       /* ProjectManager.getInstance().addProjectManagerListener(new ProjectManagerListener() {
             @Override
             public void projectClosed(@NotNull Project project) {
-                if(codeEditor!=null){
+                //会导致非新窗口 打开项目时 绿色
+               *//* if(codeEditor!=null){
                     EditorFactory.getInstance().releaseEditor(codeEditor);
                     codeEditor = null;
-                }
+                }*//*
                 ProjectManagerListener.super.projectClosed(project);
             }
 
@@ -140,7 +136,7 @@ public class NoteDetailPanel extends JPanel{
                 currentProject = project;
                 ProjectManagerListener.super.projectOpened(project);
             }
-        });
+        });*/
       return editor;
     }
 
@@ -150,13 +146,13 @@ public class NoteDetailPanel extends JPanel{
         return document;
     }
     private void setEditorContent(String content) {
-        if(codeEditor == null){
+       /* if(codeEditor == null){
             remove(scrollPane);
 
             codeEditor = createCodeEditor();
             scrollPane = ScrollPaneFactory.createScrollPane(codeEditor.getComponent(), true);
             add(scrollPane, gbc);
-        }
+        }*/
         if (codeEditor != null) {
             /**
              * 设置 文本必须在ApplicationManager.getApplication().runWriteAction中设置 否则会报错
