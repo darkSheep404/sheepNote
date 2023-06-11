@@ -5,7 +5,6 @@ import com.darksheep.sheepnote.config.NoteDataRepository;
 import com.darksheep.sheepnote.data.NoteData;
 import com.darksheep.sheepnote.editor.failtest.NoteDataHandler;
 import com.darksheep.sheepnote.editor.utils.EditorHelper;
-import com.darksheep.sheepnote.icon.PluginIcons;
 import com.darksheep.sheepnote.toolWindow.divider.CustomSplitPaneUI;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -48,7 +47,6 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
 
     private static NoteDataHandler noteDataHandler;
 
-
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
 
@@ -59,13 +57,17 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
         buttonPanel.add(sortByUpdateTimeButton);
         buttonPanel.add(deleteButton);
 
-        searchTextField.setPreferredSize(new Dimension(0, 10));
-        searchTextField.setMaximumSize(searchTextField.getPreferredSize());
+        searchTextField.setPreferredSize(new Dimension(0, 30));
+        searchTextField.setPreferredSize(searchTextField.getPreferredSize());
+        searchTextField.setToolTipText("search by note title or selected code");
         // 设置左侧面板内容
         JPanel leftPanel = new JPanel(new BorderLayout());
-        leftPanel.add(buttonPanel, BorderLayout.NORTH);
-        leftPanel.add(searchTextField, BorderLayout.CENTER);
-        leftPanel.add(noteListWrapperPanel, BorderLayout.SOUTH);
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(buttonPanel,BorderLayout.NORTH);
+        topPanel.add(searchTextField,BorderLayout.CENTER);
+        leftPanel.add(topPanel, BorderLayout.NORTH);
+       /* leftPanel.add(searchTextField, BorderLayout.CENTER);*/
+        leftPanel.add(noteListWrapperPanel, BorderLayout.CENTER);
         //初始化右侧面板
         rightPanel = new NoteDetailPanel();
 

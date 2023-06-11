@@ -121,7 +121,7 @@ public class NoteListController {
 
         for (int i = 0; i < noteListModel.size(); i++) {
             NoteData note = noteListModel.get(i);
-            if (note.noteTitle.toLowerCase().contains(searchText)) {
+            if (note.noteTitle.toLowerCase().contains(searchText)||note.selectCode.toLowerCase().contains(searchText)) {
                 noteList.setSelectedIndex(i);
                 noteList.ensureIndexIsVisible(i);
                 noteList.repaint();
