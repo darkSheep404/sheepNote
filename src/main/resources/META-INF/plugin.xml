@@ -35,11 +35,16 @@
     <change-notes>
         <![CDATA[
       <ul>
-        <li><b>2023.06.05</b>
+        <li><b>2023.06.11</b><br>
+                fix filepath on response on click<br>
+                文件路径点击不跳转
+            </li>
+        <li><b>2023.06.05</b><br>
             use editor with SyntaxHighlighter to display selectCode instead of text area,set toolsWindow default bottom.<br>
             使用编辑器替换text area 来显示选中的代码,toolWindows 默认放在底部
         </li>
-        <li><b>1.0.0</b> implement base feature<br>
+        <li><b>1.0.0</b><br>
+         implement base feature<br>
             实现基础功能
         </li>
       </ul>
