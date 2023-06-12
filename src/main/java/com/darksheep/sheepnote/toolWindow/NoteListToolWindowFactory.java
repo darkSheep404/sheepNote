@@ -98,7 +98,7 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
                 String details ="<ul style=\"font-size:14px\">\n" +
                         "        <li><strong>this plugin github Repository:</strong> <a href='https://github.com/darkSheep404/sheepNote'><span>https://github.com/darkSheep404/sheepNote</span></a></li>\n" +
                         "        <li><span>please feel free to <strong>PR/Issue</strong> this repository for any <strong>question and bugs</strong></span></li>\n" +
-                        "        <li><span>if this note do helps to you ,please feel free to <strong>a star to this repo</strong></span></a></li>       \n" +
+                        "        <li><span>if this note do helps to you , feel free to <strong>give a star to this repo</strong></span></a></li>       \n" +
                         "    </ul>";
                 JBLabel label = new JBLabel("<html>" + details + "</html>");
                 //设置可复制
