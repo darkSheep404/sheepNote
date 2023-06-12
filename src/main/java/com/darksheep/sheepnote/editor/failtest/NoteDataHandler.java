@@ -51,7 +51,7 @@ public final class NoteDataHandler {
     public static DefaultListModel<NoteData> getNoteDataDefaultListModel(Content content) {
         JSplitPane mainPanel = (JSplitPane) content.getComponent();
         JPanel leftPanel = (JPanel) mainPanel.getLeftComponent();
-        JPanel noteListWrapperPanel = (JPanel)leftPanel.getComponent(2);
+        JPanel noteListWrapperPanel = (JPanel)leftPanel.getComponent(1);
 
         JScrollPane scrollPane = (JScrollPane)noteListWrapperPanel.getComponent(0);
         JList<?> list = (JList<?>) scrollPane.getViewport().getView();
@@ -64,7 +64,7 @@ public final class NoteDataHandler {
         Content content = toolWindow.getContentManager().getContent(0);
         JSplitPane mainPanel = (JSplitPane) content.getComponent();
         JPanel leftPanel = (JPanel) mainPanel.getLeftComponent();
-        JPanel noteListWrapperPanel = (JPanel)leftPanel.getComponent(2);
+        JPanel noteListWrapperPanel = (JPanel)leftPanel.getComponent(1);
         JScrollPane scrollPane = (JScrollPane)noteListWrapperPanel.getComponent(0);
         JList<?> list = (JList<?>) scrollPane.getViewport().getView();
         @SuppressWarnings("unchecked")
