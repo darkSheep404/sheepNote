@@ -15,12 +15,15 @@
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
      A plugin which allow you to make notes for select codes,and click note to navigate to the code you selected to mark note,which will do helps to read and understand your project,and do notes base on code,you can sync nodes when change computer by copy the local data.sqllite file<br><br><br>
-        
-     just use sheepNote plugin to select code, and make notes for them<br> 
-     notes will be dispalyed in sheepNote toolsWindow <br>
-     you call search and manager your notes in sheepNote toolsWindow<br>
-     Besides, it will display some icon on the line where you make notes at <br>
 
+     <ul>
+     <li>select code to make note for them</li>
+     <li>noteTitle will display like comments</li>
+     <li>search,manage and view note and selected code  in sheepNote toolsWindow</li>
+     <li>click notepath in noteDetail to navigate to code file and lineNumber</li>
+     <li>display icon on note line,click icon can navigate note in note list</li>
+     <ul>   
+    
     <strong>notes will be stored at 'D:\sheepnote\data.sqllite' by default,</strong><br>
     <strong>And due to this, this plugin cannot work on mac or win without "D:"</strong>
     <strong>delete it will leads to note lost </strong>
@@ -28,8 +31,12 @@
     <br>
     <strong>if this plugin do help to you, or you have any suggestions,pls star/issue/pr in below github repo </strong><br>
     <strong><a href ="https://github.com/darkSheep404/sheepNote">this github repository</a></strong><br>
-    <img src ="https://plugins.jetbrains.com/files/21869/preview_7a83b6d9-ef33-4d19-8cea-7b2b2cb41729"/><br>
-    <img src ="https://plugins.jetbrains.com/files/21869/preview_32d9d92b-40e6-4362-ad3f-d71923ea41d9"/><br>
+
+    <img src ="https://plugins.jetbrains.com/files/21869/screenshot_327df43d-74bd-4b56-9a47-7ea1e8377532"/><br>
+
+    <img src ="https://plugins.jetbrains.com/files/21869/screenshot_502b6238-908e-45cf-8698-3437266e7bef"/><br>
+
+    <img src ="https://plugins.jetbrains.com/files/21869/screenshot_62c7d590-a05e-4f85-92da-8f5925d184ae"/><br>
 
   ]]></description>
     <change-notes>

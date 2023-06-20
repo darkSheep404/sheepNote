@@ -52,3 +52,8 @@ remark: 实现了在编辑器内渲染已经做过的笔记
 
 ---
 
+参考
+https://shields.io/badges/jet-brains-plugins
+https://simpleicons.org/?q=idea
+更新reademe
+
