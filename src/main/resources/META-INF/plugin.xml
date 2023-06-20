@@ -23,7 +23,7 @@
      <li>click notepath in noteDetail to navigate to code file and lineNumber</li>
      <li>display icon on note line,click icon can navigate note in note list</li>
      <ul>   
-    
+
     <strong>notes will be stored at 'D:\sheepnote\data.sqllite' by default,</strong><br>
     <strong>And due to this, this plugin cannot work on mac or win without "D:"</strong>
     <strong>delete it will leads to note lost </strong>
@@ -36,15 +36,22 @@
 
     <img src ="https://plugins.jetbrains.com/files/21869/screenshot_502b6238-908e-45cf-8698-3437266e7bef"/><br>
 
-    <img src ="https://plugins.jetbrains.com/files/21869/screenshot_62c7d590-a05e-4f85-92da-8f5925d184ae"/><br>
+    <img src ="https://plugins.jetbrains.com/files/21869/screenshot_c4e5615d-2702-49c2-a568-04d41a55f3c1"/><br>
+
+    <img src ="https://plugins.jetbrains.com/files/21869/screenshot_951e9f00-24c3-4b09-8d23-9b56a8b4a330"/><br>
+
 
   ]]></description>
     <change-notes>
         <![CDATA[
       <ul>
+       <li><b>2023.06.20</b><br>
+                update desc<br>
+                更新描述
+            </li>
         <li><b>2023.06.11</b><br>
                 fix filepath on response on click<br>
-                文件路径点击不跳转
+                修复文件路径点击不跳转
             </li>
         <li><b>2023.06.05</b><br>
             use editor with SyntaxHighlighter to display selectCode instead of text area,set toolsWindow default bottom.<br>
