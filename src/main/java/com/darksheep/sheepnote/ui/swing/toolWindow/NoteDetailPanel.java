@@ -1,4 +1,4 @@
-package com.darksheep.sheepnote.toolWindow;
+package com.darksheep.sheepnote.ui.swing.toolWindow;
 
 import com.darksheep.sheepnote.data.NoteData;
 import com.intellij.ide.DataManager;

@@ -1,7 +1,7 @@
-package com.darksheep.sheepnote.editor.failtest;
+package com.darksheep.sheepnote.ui.swing.editor.failtest;
 
 import com.darksheep.sheepnote.data.NoteData;
-import com.darksheep.sheepnote.toolWindow.NoteListToolWindowFactory;
+import com.darksheep.sheepnote.ui.swing.toolWindow.NoteListToolWindowFactory;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;

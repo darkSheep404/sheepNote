@@ -1,8 +1,7 @@
-package com.darksheep.sheepnote.editor.gutter;
+package com.darksheep.sheepnote.ui.swing.editor.gutter;
 
 import com.darksheep.sheepnote.config.NoteDataRepository;
 import com.darksheep.sheepnote.data.NoteData;
-import com.darksheep.sheepnote.icon.SimpleIcons;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.icons.AllIcons;

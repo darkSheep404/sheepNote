@@ -1,23 +1,17 @@
-package com.darksheep.sheepnote.editor.gutter;
+package com.darksheep.sheepnote.ui.swing.editor.gutter;
 
 import com.darksheep.sheepnote.data.NoteData;
-import com.darksheep.sheepnote.toolWindow.NoteListToolWindowFactory;
+import com.darksheep.sheepnote.ui.swing.toolWindow.NoteListToolWindowFactory;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.MessageType;
-import com.intellij.openapi.ui.popup.Balloon;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.ui.awt.RelativePoint;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
 
 public class GutterAction extends AnAction {
         private NoteData noteData;

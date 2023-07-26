@@ -73,8 +73,8 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="sheepNote"  anchor="bottom"  icon= "AllIcons.Actions.IntentionBulb"
-                    factoryClass="com.darksheep.sheepnote.toolWindow.NoteListToolWindowFactory"/>
-        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.darksheep.sheepnote.editor.gutter.CustomGutterIconProvider"/>
+                    factoryClass="com.darksheep.sheepnote.ui.swing.toolWindow.NoteListToolWindowFactory"/>
+        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.darksheep.sheepnote.ui.swing.editor.gutter.CustomGutterIconProvider"/>
     </extensions>
     <actions>
         <action id="com.darksheep.sheepnote.CodeNoteAction"
@@ -86,6 +86,6 @@
         </action>
     </actions>
     <applicationListeners>
-        <listener topic="com.intellij.openapi.fileEditor.FileEditorManagerListener" class="com.darksheep.sheepnote.editor.CustomEditorFileOpenedListener"/>
+        <listener topic="com.intellij.openapi.fileEditor.FileEditorManagerListener" class="com.darksheep.sheepnote.ui.swing.editor.CustomEditorFileOpenedListener"/>
     </applicationListeners>
 </idea-plugin>

@@ -1,4 +1,4 @@
-package com.darksheep.sheepnote.editor.gutter;
+package com.darksheep.sheepnote.ui.swing.editor.gutter;
 
 import com.darksheep.sheepnote.data.NoteData;
 import com.intellij.codeInsight.daemon.GutterIconNavigationHandler;

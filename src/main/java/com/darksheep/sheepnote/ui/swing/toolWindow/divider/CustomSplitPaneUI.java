@@ -1,4 +1,4 @@
-package com.darksheep.sheepnote.toolWindow.divider;
+package com.darksheep.sheepnote.ui.swing.toolWindow.divider;
 
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;

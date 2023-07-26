@@ -1,17 +1,15 @@
-package com.darksheep.sheepnote.toolWindow;
+package com.darksheep.sheepnote.ui.swing.toolWindow;
 
 import com.darksheep.sheepnote.config.AddNoteEventListener;
 import com.darksheep.sheepnote.config.NoteDataRepository;
 import com.darksheep.sheepnote.data.NoteData;
-import com.darksheep.sheepnote.editor.failtest.NoteDataHandler;
-import com.darksheep.sheepnote.editor.utils.EditorHelper;
-import com.darksheep.sheepnote.toolWindow.divider.CustomSplitPaneUI;
+import com.darksheep.sheepnote.ui.swing.editor.failtest.NoteDataHandler;
+import com.darksheep.sheepnote.ui.swing.editor.utils.EditorHelper;
+import com.darksheep.sheepnote.ui.swing.toolWindow.divider.CustomSplitPaneUI;
 import com.darksheep.sheepnote.utils.LocalHtmlHelper;
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogBuilder;
@@ -22,7 +20,6 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.jcef.JBCefBrowser;
 import com.intellij.util.messages.MessageBus;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;

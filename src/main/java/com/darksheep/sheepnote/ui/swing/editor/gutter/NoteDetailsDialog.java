@@ -1,8 +1,8 @@
-package com.darksheep.sheepnote.editor.gutter;
+package com.darksheep.sheepnote.ui.swing.editor.gutter;
 
 import com.darksheep.sheepnote.data.NoteData;
-import com.darksheep.sheepnote.editor.failtest.NoteDataHandler;
-import com.darksheep.sheepnote.toolWindow.NoteListToolWindowFactory;
+import com.darksheep.sheepnote.ui.swing.editor.failtest.NoteDataHandler;
+import com.darksheep.sheepnote.ui.swing.toolWindow.NoteListToolWindowFactory;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;

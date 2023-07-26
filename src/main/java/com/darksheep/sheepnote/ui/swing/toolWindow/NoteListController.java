@@ -1,8 +1,8 @@
-package com.darksheep.sheepnote.toolWindow;
+package com.darksheep.sheepnote.ui.swing.toolWindow;
 
 import com.darksheep.sheepnote.config.NoteDataRepository;
 import com.darksheep.sheepnote.data.NoteData;
-import com.darksheep.sheepnote.editor.utils.EditorHelper;
+import com.darksheep.sheepnote.ui.swing.editor.utils.EditorHelper;
 import com.intellij.ui.components.JBList;
 
 import javax.swing.*;

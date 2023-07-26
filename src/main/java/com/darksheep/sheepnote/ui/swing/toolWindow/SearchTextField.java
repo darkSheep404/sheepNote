@@ -1,4 +1,4 @@
-package com.darksheep.sheepnote.toolWindow;
+package com.darksheep.sheepnote.ui.swing.toolWindow;
 
 import com.intellij.icons.AllIcons;
 

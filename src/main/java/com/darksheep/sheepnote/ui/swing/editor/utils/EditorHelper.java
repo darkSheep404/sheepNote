@@ -1,4 +1,4 @@
-package com.darksheep.sheepnote.editor.utils;
+package com.darksheep.sheepnote.ui.swing.editor.utils;
 
 import com.darksheep.sheepnote.data.NoteData;
 import com.intellij.openapi.editor.Editor;
