@@ -6,6 +6,7 @@ import com.darksheep.sheepnote.data.NoteData;
 import com.darksheep.sheepnote.ui.swing.editor.failtest.NoteDataHandler;
 import com.darksheep.sheepnote.ui.swing.editor.utils.EditorHelper;
 import com.darksheep.sheepnote.ui.swing.toolWindow.divider.CustomSplitPaneUI;
+import com.darksheep.sheepnote.ui.web.brower.JBCefBrowserSingleton;
 import com.darksheep.sheepnote.utils.LocalHtmlHelper;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -110,17 +111,16 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
             public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
                 DialogBuilder dialogBuilder = new DialogBuilder(anActionEvent.getProject());
                 // 设置 Dialog 的标题
-                    dialogBuilder.setTitle("About and Tips");
+                dialogBuilder.setTitle("About and Tips");
                 JPanel panel = new JPanel(new BorderLayout());
-                JBCefBrowser jbCefBrowser = new JBCefBrowser();
-                jbCefBrowser.loadHTML(LocalHtmlHelper.toHtmlString(new File("D:\\coderepo\\com.github\\sheepNote\\src\\main\\resources\\META-INF\\web\\about.html")));
-                panel.add(jbCefBrowser.getComponent());
-                // 设置 Dialog 的内容
+                JBCefBrowserSingleton.loadURL("D:\\coderepo\\com.github\\sheepNote\\src\\main\\resources\\META-INF\\web\\about.html");
+                panel.add(JBCefBrowserSingleton.getComponent());
+                //设置在外部窗口打开链接
+                JBCefBrowserSingleton.getInstance().setOpenLinksInExternalBrowser(true);
                 dialogBuilder.setCenterPanel(panel);
-                // 添加取消按钮
-                    dialogBuilder.addCancelAction();
-                // 显示 Dialog
-                    dialogBuilder.show();
+                dialogBuilder.addCancelAction();
+
+                dialogBuilder.show();
             }
         };
     }
