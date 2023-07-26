@@ -7,6 +7,7 @@ import com.darksheep.sheepnote.ui.swing.editor.failtest.NoteDataHandler;
 import com.darksheep.sheepnote.ui.swing.editor.utils.EditorHelper;
 import com.darksheep.sheepnote.ui.swing.toolWindow.divider.CustomSplitPaneUI;
 import com.darksheep.sheepnote.ui.web.brower.JBCefBrowserSingleton;
+import com.darksheep.sheepnote.ui.web.container.BrowserPanel;
 import com.darksheep.sheepnote.utils.LocalHtmlHelper;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -96,12 +97,16 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
         Content mainContent = contentFactory.createContent(mainPanel, "NoteList", false);
 
         // 第二个 Content，包含 FlowchartPanel
-        Content flowchartContent = contentFactory.createContent(flowchartPanel, "NoteFlowchart", false);
+        Content flowchartContent = contentFactory.createContent(jbCefBrowser.getComponent(), "NoteFlowchart", false);
+
+        //第三个 浏览器
+        Content browserContent = contentFactory.createContent(new BrowserPanel(), "Browser", false);
 
 
 
         toolWindow.getContentManager().addContent(mainContent);
         toolWindow.getContentManager().addContent(flowchartContent);
+        toolWindow.getContentManager().addContent(browserContent);
         toolWindow.getContentManager().setSelectedContent(mainContent);
     }
     @NotNull
