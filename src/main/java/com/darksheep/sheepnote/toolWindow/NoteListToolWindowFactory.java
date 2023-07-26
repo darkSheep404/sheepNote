@@ -6,28 +6,32 @@ import com.darksheep.sheepnote.data.NoteData;
 import com.darksheep.sheepnote.editor.failtest.NoteDataHandler;
 import com.darksheep.sheepnote.editor.utils.EditorHelper;
 import com.darksheep.sheepnote.toolWindow.divider.CustomSplitPaneUI;
+import com.darksheep.sheepnote.utils.LocalHtmlHelper;
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
-import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentFactory;
+import com.intellij.ui.jcef.JBCefBrowser;
 import com.intellij.util.messages.MessageBus;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import static com.intellij.analysis.JvmAnalysisBundle.message;
 
 public class NoteListToolWindowFactory implements ToolWindowFactory {
 
@@ -83,8 +87,24 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
                 initTipsAction()
         ));
 
-        Content toolsWindowContent = toolWindow.getContentManager().getFactory().createContent(mainPanel, "", false);
-        toolWindow.getContentManager().addContent(toolsWindowContent);
+        // 创建 FlowchartPanel
+        JPanel flowchartPanel = new JPanel();
+        JBCefBrowser jbCefBrowser = new JBCefBrowser("baidu.com");
+        jbCefBrowser.openDevtools();
+        flowchartPanel.add(jbCefBrowser.getComponent());
+        // 创建一个新的 Content
+        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        // 第一个 Content，包含主面板
+        Content mainContent = contentFactory.createContent(mainPanel, "NoteList", false);
+
+        // 第二个 Content，包含 FlowchartPanel
+        Content flowchartContent = contentFactory.createContent(flowchartPanel, "NoteFlowchart", false);
+
+
+
+        toolWindow.getContentManager().addContent(mainContent);
+        toolWindow.getContentManager().addContent(flowchartContent);
+        toolWindow.getContentManager().setSelectedContent(mainContent);
     }
     @NotNull
     private DumbAwareAction initTipsAction() {
@@ -93,23 +113,17 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
             public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
                 DialogBuilder dialogBuilder = new DialogBuilder(anActionEvent.getProject());
                 // 设置 Dialog 的标题
-                dialogBuilder.setTitle("About and Tips");
+                    dialogBuilder.setTitle("About and Tips");
                 JPanel panel = new JPanel(new BorderLayout());
-                String details ="<ul style=\"font-size:14px\">\n" +
-                        "        <li><strong>this plugin github Repository:</strong> <a href='https://github.com/darkSheep404/sheepNote'><span>https://github.com/darkSheep404/sheepNote</span></a></li>\n" +
-                        "        <li><span>please feel free to <strong>PR/Issue</strong> this repository for any <strong>question and bugs</strong></span></li>\n" +
-                        "        <li><span>if this note do helps to you , feel free to <strong>give a star to this repo</strong></span></a></li>       \n" +
-                        "    </ul>";
-                JBLabel label = new JBLabel("<html>" + details + "</html>");
-                //设置可复制
-                label.setCopyable(true);
-                panel.add(label, BorderLayout.CENTER);
+                JBCefBrowser jbCefBrowser = new JBCefBrowser();
+                jbCefBrowser.loadHTML(LocalHtmlHelper.toHtmlString(new File("D:\\coderepo\\com.github\\sheepNote\\src\\main\\resources\\META-INF\\web\\about.html")));
+                panel.add(jbCefBrowser.getComponent());
                 // 设置 Dialog 的内容
                 dialogBuilder.setCenterPanel(panel);
                 // 添加取消按钮
-                dialogBuilder.addCancelAction();
+                    dialogBuilder.addCancelAction();
                 // 显示 Dialog
-                dialogBuilder.show();
+                    dialogBuilder.show();
             }
         };
     }
