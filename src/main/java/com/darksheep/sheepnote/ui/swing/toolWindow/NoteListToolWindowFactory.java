@@ -8,6 +8,7 @@ import com.darksheep.sheepnote.ui.swing.editor.utils.EditorHelper;
 import com.darksheep.sheepnote.ui.swing.toolWindow.divider.CustomSplitPaneUI;
 import com.darksheep.sheepnote.ui.web.brower.JBCefBrowserSingleton;
 import com.darksheep.sheepnote.ui.web.container.BrowserPanel;
+import com.darksheep.sheepnote.ui.web.container.FlowchartPanel;
 import com.darksheep.sheepnote.utils.LocalHtmlHelper;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -28,6 +29,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -97,15 +99,15 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
         Content mainContent = contentFactory.createContent(mainPanel, "NoteList", false);
 
         // 第二个 Content，包含 FlowchartPanel
-        Content flowchartContent = contentFactory.createContent(jbCefBrowser.getComponent(), "NoteFlowchart", false);
+        Content flowchartContent = contentFactory.createContent(new FlowchartPanel().getBrowser().getComponent(), "NoteFlowchart", false);
 
         //第三个 浏览器
         Content browserContent = contentFactory.createContent(new BrowserPanel(), "Browser", false);
 
 
-
+        browserContent.setIcon(AllIcons.Actions.IntentionBulb);
         toolWindow.getContentManager().addContent(mainContent);
-        toolWindow.getContentManager().addContent(flowchartContent);
+        // toolWindow.getContentManager().addContent(flowchartContent);
         toolWindow.getContentManager().addContent(browserContent);
         toolWindow.getContentManager().setSelectedContent(mainContent);
     }
@@ -115,10 +117,10 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
             @Override
             public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
                 DialogBuilder dialogBuilder = new DialogBuilder(anActionEvent.getProject());
-                // 设置 Dialog 的标题
+
                 dialogBuilder.setTitle("About and Tips");
                 JPanel panel = new JPanel(new BorderLayout());
-                JBCefBrowserSingleton.loadURL("D:\\coderepo\\com.github\\sheepNote\\src\\main\\resources\\META-INF\\web\\about.html");
+                JBCefBrowserSingleton.loadHtmlByFilePathInWebDir("/about.html");
                 panel.add(JBCefBrowserSingleton.getComponent());
                 //设置在外部窗口打开链接
                 JBCefBrowserSingleton.getInstance().setOpenLinksInExternalBrowser(true);

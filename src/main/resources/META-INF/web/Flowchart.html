@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flowchart</title>
+    <script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        #flowchartDiv {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div id="flowchartDiv"></div>
+<script>
+    mermaid.initialize({startOnLoad:true});
+
+    window.renderFlowchart = function(flowchartCode) {
+        document.querySelector("#flowchartDiv").innerHTML = flowchartCode;
+        mermaid.init(undefined, "#flowchartDiv");
+    };
+
+    window.setCodeClickListener = function(listenerName) {
+        document.querySelector("#flowchartDiv").addEventListener('click', function(e) {
+            if (window[listenerName]) {
+                window[listenerName](e.target.textContent);
+            }
+        });
+    };
+</script>
+</body>
+</html>

@@ -30,8 +30,8 @@ public class JBCefBrowserSingleton {
         JBCefBrowserHolder.INSTANCE.loadURL(url);
     }
 
-    public static void loadHtmlByFilePath(String url) {
-        JBCefBrowserHolder.INSTANCE.loadURL(LocalHtmlHelper.toHtmlString(new File(url)));
+    public static void loadHtmlByFilePathInWebDir(String url) {
+        JBCefBrowserHolder.INSTANCE.loadHTML(LocalHtmlHelper.loadByResourceInWebDir(url));
     }
 }
 
