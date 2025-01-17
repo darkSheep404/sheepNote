@@ -52,6 +52,19 @@ remark: 实现了在编辑器内渲染已经做过的笔记
 
 ---
 
+---
+version: v0.0.4
+updateTime: 2025-01-17 (星期五)
+remark: 增加兼容版本,提交本地草稿代码,增加about.html的功能
+
+效果图
+![](https://sheepnote.oss-cn-shenzhen.aliyuncs.com/ita/20230509210850.png)
+可能存在的问题
+- [ ] 当同一个多个笔记时 显示信息可能错乱
+- [ ] 基于当前的监听器 可能出现打开文件时没有命中监听器 导致不渲染笔记内容
+
+---
+
 参考
 https://shields.io/badges/jet-brains-plugins
 https://simpleicons.org/?q=idea
