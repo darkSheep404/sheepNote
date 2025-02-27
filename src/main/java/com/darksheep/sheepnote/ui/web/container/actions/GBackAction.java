@@ -24,8 +24,12 @@ public class GBackAction extends AnAction implements DumbAware {
         super.update(e);
     }
 
+
+
     @Override
     public void actionPerformed(AnActionEvent e) {
-        jbCefBrowser.getCefBrowser().canGoBack();
+        if (jbCefBrowser.getCefBrowser().canGoBack()) {
+            jbCefBrowser.getCefBrowser().goBack();
+        }
     }
 }
