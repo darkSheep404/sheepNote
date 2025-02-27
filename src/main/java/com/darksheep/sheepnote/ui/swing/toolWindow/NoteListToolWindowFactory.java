@@ -38,9 +38,10 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
 
     public static final String TOOL_WINDOW_ID = "sheepNote";
     private JTextField searchTextField = new JFormattedTextField();
-    private JButton sortByCreateTimeButton = new JButton("sort by updateTime");
-    private JButton sortByUpdateTimeButton = new JButton("sort by createTime");
-    private JButton deleteButton = new JButton("Delete");
+    private JButton sortByCreateTimeButton = new JButton("updateTime", AllIcons.ObjectBrowser.SortByType);
+
+    private JButton sortByUpdateTimeButton = new JButton("createTime",AllIcons.ObjectBrowser.SortByType);
+    private JButton deleteButton = new JButton(AllIcons.General.Remove);
     private JPanel noteListWrapperPanel = new JPanel();
     private JTextArea selectCodeTextArea = new JTextArea();
 

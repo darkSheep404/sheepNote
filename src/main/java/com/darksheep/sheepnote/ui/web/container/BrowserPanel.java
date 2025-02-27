@@ -24,16 +24,20 @@ public class BrowserPanel extends SimpleToolWindowPanel {
         super(true, true);
         jbCefBrowser = new JBCefBrowser("bing.com");
 
-        urlField = new JTextField("https://bing.com", 30);
+        urlField = new JTextField("https://bing.com");
         urlField.addActionListener(e -> navigateToUrl());
+        urlField.setPreferredSize(new Dimension(600, 30));
         // Create search button
-        searchButton = new JButton(AllIcons.Actions.Search);
+        //AllIcons.Actions.Search
+        searchButton = new JButton();
+        searchButton.setIcon(AllIcons.Actions.Search);
+        // searchButton.setPreferredSize(new Dimension(searchButton.getIcon().getIconWidth() + 10, searchButton.getIcon().getIconHeight() + 10)); // 设置按钮大小包裹图标
         searchButton.addActionListener(e -> navigateToUrl());
 
         // Create a panel for the URL input and search button
-        JPanel urlPanel = new JPanel(new BorderLayout());
-        urlPanel.add(urlField, BorderLayout.CENTER);
-        urlPanel.add(searchButton, BorderLayout.EAST);
+        JPanel urlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        urlPanel.add(urlField);
+        urlPanel.add(searchButton);
 
         // Create toolbar
         ActionToolbar actionToolbar = ActionManager.getInstance().createActionToolbar(ActionPlaces.CONTEXT_TOOLBAR, buildToolbar(), true);

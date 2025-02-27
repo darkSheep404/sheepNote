@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.darksheep"
-version = "2023-0620-02"
+version = "2023-0620-03"
 
 repositories {
     /*上述代码将阿里云Maven仓库设置为优先级最高，
