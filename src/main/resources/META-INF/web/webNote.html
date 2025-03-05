@@ -110,42 +110,71 @@
         /* 控制栏样式 */
         #noteListControls {
             display: flex;
+            flex-direction: column;
             padding: 12px;
             gap: 8px;
             border-bottom: 1px solid var(--control-color);
             background: var(--tertiary-background);
         }
+        /* 导航栏样式 */
+        .nav-controls {
+            padding: 12px 16px;
+            background: var(--tertiary-background);
+            border-bottom: 1px solid var(--control-color);
+            display: flex;
+            gap: 8px;
+            backdrop-filter: blur(20px);
+        }
 
-        #searchInput {
+        /* 搜索框改造为导航项样式 */
+        .search-item {
             flex: 1;
-            padding: 8px 12px;
-            border: 1px solid var(--control-color);
+            max-width: 400px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 0px 8px 34px;
+            border: none;
             border-radius: 8px;
             background: var(--secondary-background);
+            color: var(--label-color);
+            font: inherit;
             transition: all 0.2s ease;
         }
 
-        #searchInput:focus {
+        .search-input:focus {
             outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+            box-shadow: 0 0 0 2px var(--accent-color);
         }
 
-        /* macOS风格按钮 */
-        .mac-button {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            background: var(--accent-color);
-            color: white;
-            font-size: 13px;
+        /* 排序按钮样式 */
+        .sort-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: var(--secondary-background);
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
-        .mac-button:hover {
-            background: #0063CC;
-            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
+        .sort-item:hover {
+            background: var(--hover-background);
+            transform: translateY(-1px);
+        }
+
+        /* 图标样式 */
+        .nav-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 6px;
+            stroke: currentColor;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-width: 1.8;
         }
 
         /* 滚动条样式 */
@@ -176,12 +205,36 @@
 </head>
 <body>
 <div id="container">
-    <div id="noteListContainer">
-        <div id="noteListControls">
-            <input type="text" id="searchInput" placeholder="Search...">
-            <button class="mac-button" onclick="sortNotesByName()">Name</button>
-            <button class="mac-button" onclick="sortNotesByUpdateTime()">Date</button>
+    <div id="noteListControls">
+        <div class="nav-controls">
+        <!-- 搜索项 -->
+        <div class="search-item">
+            <input type="text"
+                   id="searchInput"
+                   class="search-input"
+                   placeholder="Search notes...">
+            <svg class="nav-icon"
+                 style="position:absolute;left:12px;top:50%;transform:translateY(-50%)"
+                 viewBox="0 0 24 24">
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
         </div>
+
+        <!-- 排序按钮 -->
+        <div class="sort-item" onclick="sortNotesByName()">
+            <svg class="nav-icon" viewBox="0 0 24 24">
+                <path d="M8 6h13M8 12h13M8 18h13M3 6h1m-1 6h1m-1 6h1"/>
+            </svg>
+            <span>Name</span>
+        </div>
+
+        <div class="sort-item" onclick="sortNotesByUpdateTime()">
+            <svg class="nav-icon" viewBox="0 0 24 24">
+                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>Date</span>
+        </div>
+    </div>
         <ul id="noteList"></ul>
     </div>
     <div id="noteDetail">
@@ -196,9 +249,19 @@
     </div>
 </div>
 <script>
-    let notes = [];
+    let notes = [
+        {
+            "id": 4,
+            "noteTitle": "this Note",
+            "noteFilePath": "D:/coderepo/com.github/sheepNote/src/main/java/com/darksheep/sheepnote/toolWindow/NoteListController.java",
+            "noteLineNumber": 105,
+            "selectCode": "oteDataList.remove(selectedNote);",
+            "createTime": "May 26, 2023, 12:58:54 AM",
+            "updateTime": "May 26, 2023, 12:58:54 AM"
+        }
+    ];
     let selectedNoteId = null;
-
+    initializeNotes(JSON.stringify(notes));
     function renderNotes(filteredNotes) {
         const noteList = document.getElementById('noteList');
         noteList.innerHTML = '';
@@ -247,6 +310,20 @@
     }
 
     /** 其他原有函数保持不变，仅需添加以下代码... **/
+
+    /** 初始化时自动选择第一个笔记**/
+    function initializeNotesV2(noteData) {
+        console.log('initializeNotes');
+        document.addEventListener('DOMContentLoaded', () => {
+            notes = JSON.parse(noteData);
+            if(notes.length > 0) {
+                selectedNoteId = notes[0].id;
+                showNoteDetail(notes[0]);
+            }
+            console.log('DOMContentLoaded');
+            renderNotes(notes);
+        });
+    }
 
     /** 初始化时自动选择第一个笔记**/
     function initializeNotes(noteData) {

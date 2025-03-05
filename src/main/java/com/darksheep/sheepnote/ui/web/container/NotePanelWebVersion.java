@@ -55,13 +55,14 @@ public class NotePanelWebVersion extends SimpleToolWindowPanel {
             cefBrowser.getClient().addDisplayHandler(new CefDisplayHandlerAdapter() {
                 @Override
                 public void onAddressChange(CefBrowser browser, CefFrame frame, String url) {
+                    super.onAddressChange(browser, frame, url);
                     String script1= "document.addEventListener('DOMContentLoaded', function () {\n" +
                             "initializeNotes('" + escapedJson + "');"+
                             "});";
                     System.out.println(noteDataJson);
                     browser.executeJavaScript(script1,null,0);
                     // webNoteBrowser.getCefBrowser().executeJavaScript("initializeNotes('" + noteDataJson + "');", webNoteBrowser.getCefBrowser().getURL(), 0);
-                    super.onAddressChange(browser, frame, url);
+
                 }
             });
         }
@@ -112,10 +113,6 @@ public class NotePanelWebVersion extends SimpleToolWindowPanel {
                         }
                     });
                 });
-            }
-
-            if (fileSystem != FileSystems.getDefault()) {
-                fileSystem.close();
             }
         } catch (Exception e) {
             e.printStackTrace();
