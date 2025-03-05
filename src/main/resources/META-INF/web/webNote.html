@@ -4,108 +4,277 @@
     <meta charset="UTF-8">
     <title>Web Note List</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            height: 100vh;
+        :root {
+            --system-background: #f5f5f7;
+            --secondary-background: rgba(255, 255, 255, 0.8);
+            --tertiary-background: rgba(255, 255, 255, 0.6);
+            --label-color: #1d1d1f;
+            --accent-color: #007AFF;
+            --control-color: rgba(120, 120, 128, 0.16);
+            --corner-radius: 14px;
+            --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell;
+            --hover-background: rgba(0, 122, 255, 0.08);
         }
+
+        body {
+            font-family: var(--font-stack);
+            background: var(--system-background);
+            color: var(--label-color);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            backdrop-filter: blur(30px);
+        }
+
         #container {
             display: flex;
             width: 100%;
+            background: var(--tertiary-background);
         }
+
+        /* 左侧笔记列表样式 */
+        #noteListContainer {
+            width: 420px;
+            border-right: 1px solid var(--control-color);
+            display: flex;
+            flex-direction: column;
+            background: var(--secondary-background);
+            backdrop-filter: blur(40px);
+        }
+
         #noteList {
-            width: 30%;
-            border-right: 1px solid #ccc;
-            overflow-y: auto;
+            flex-grow: 1;
+            overflow-y: overlay;
             list-style-type: none;
-            padding: 0;
+            padding: 8px;
             margin: 0;
         }
+
         .noteItem {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
+            padding: 12px 16px;
+            margin: 4px;
+            border-radius: var(--corner-radius);
             cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            position: relative;
         }
+
         .noteItem:hover {
-            background-color: #f0f0f0;
+            background: var(--hover-background);
         }
+
+        .noteItem.selected {
+            background: var(--hover-background);
+            font-weight: 500;
+        }
+
+
+        /* 右侧详情样式 */
         #noteDetail {
-            width: 70%;
-            padding: 20px;
-            overflow-y: auto;
+            flex: 1;
+            padding: 24px;
+            overflow-y: overlay;
+            background: var(--secondary-background);
+            backdrop-filter: blur(40px);
         }
+
         .noteTitle {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
+
         .noteTime {
             color: #888;
+            font-size: 13px;
             margin-bottom: 20px;
+            display: flex;
+            gap: 16px;
         }
+
         .noteContent {
             white-space: pre-wrap;
-            font-family: monospace;
-            background-color: #f7f7f7;
-            padding: 10px;
-            border-radius: 5px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas;
+            background: var(--secondary-background);
+            padding: 16px;
+            border-radius: var(--corner-radius);
+            border: 1px solid var(--control-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        }
+
+        /* 控制栏样式 */
+        #noteListControls {
+            display: flex;
+            padding: 12px;
+            gap: 8px;
+            border-bottom: 1px solid var(--control-color);
+            background: var(--tertiary-background);
+        }
+
+        #searchInput {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--control-color);
+            border-radius: 8px;
+            background: var(--secondary-background);
+            transition: all 0.2s ease;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        /* macOS风格按钮 */
+        .mac-button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            background: var(--accent-color);
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .mac-button:hover {
+            background: #0063CC;
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(120, 120, 128, 0.2);
+            border-radius: 4px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --system-background: #1e1e1e;
+                --secondary-background: rgba(30, 30, 30, 0.8);
+                --tertiary-background: rgba(30, 30, 30, 0.6);
+                --label-color: #ffffff;
+                --control-color: rgba(255, 255, 255, 0.12);
+                --hover-background: rgba(0, 122, 255, 0.15);
+            }
         }
     </style>
 </head>
 <body>
 <div id="container">
-    <ul id="noteList"></ul>
+    <div id="noteListContainer">
+        <div id="noteListControls">
+            <input type="text" id="searchInput" placeholder="Search...">
+            <button class="mac-button" onclick="sortNotesByName()">Name</button>
+            <button class="mac-button" onclick="sortNotesByUpdateTime()">Date</button>
+        </div>
+        <ul id="noteList"></ul>
+    </div>
     <div id="noteDetail">
-        <div class="noteTitle" id="noteTitle"></div>
+        <div class="noteTitle" id="noteTitle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <span id="titleText"></span>
+        </div>
         <div class="noteTime" id="noteTime"></div>
         <div class="noteContent" id="noteContent"></div>
     </div>
 </div>
 <script>
-    /*const noteData = `[
-        {
-            "noteTitle": "Java Note",
-            "createTime": "2021-01-01 10:00:00",
-            "updateTime": "2021-01-01 10:00:00",
-            "selectCode": "public class Main"
-        },
-        {
-            "noteTitle": "JavaScript Note",
-            "createTime": "2021-01-01 10:00:00",
-            "updateTime": "2021-01-01 10:00:00",
-            "selectCode": "console.log"
-        }
-    ]`;
-    initializeNotes(noteData);*/
-    function renderNotes(notes) {
+    let notes = [];
+    let selectedNoteId = null;
+
+    function renderNotes(filteredNotes) {
         const noteList = document.getElementById('noteList');
-        notes.forEach(note => {
+        noteList.innerHTML = '';
+        filteredNotes.forEach(note => {
             const li = document.createElement('li');
-            li.className = 'noteItem';
-            li.textContent = note.noteTitle;
-            li.onclick = () => showNoteDetail(note);
+            li.className = `noteItem${selectedNoteId === note.id ? ' selected' : ''}`;
+            li.innerHTML = `
+                <div style="flex:1">${note.noteTitle}</div>
+                <div style="font-size:12px;color:#888">${shortenPath(note.noteFilePath)}</div>
+            `;
+            li.onclick = () => selectNote(note);
             noteList.appendChild(li);
         });
     }
 
+    function selectNote(note) {
+        selectedNoteId = note.id;
+        showNoteDetail(note);
+        renderNotes(notes.filter(n =>
+            document.getElementById('searchInput').value ?
+                n.noteTitle.toLowerCase().includes(document.getElementById('searchInput').value.toLowerCase()) : true
+        ));
+    }
+
     function showNoteDetail(note) {
-        document.getElementById('noteTitle').textContent = note.noteTitle;
-        document.getElementById('noteTime').textContent = `创建时间: ${note.createTime} 更新时间: ${note.updateTime}`;
+        document.getElementById('titleText').textContent = note.noteTitle;
+        document.getElementById('noteTime').innerHTML = `
+            <span>Created: ${formatDate(note.createTime)}</span>
+            <span>Updated: ${formatDate(note.updateTime)}</span>
+        `;
         document.getElementById('noteContent').textContent = note.selectCode;
     }
 
-    function initializeNotes(noteData) {
-        const notes = JSON.parse(noteData);
-        renderNotes(notes);
-        if (notes.length > 0) {
-            showNoteDetail(notes[0]);
-        }
+    function shortenPath(path) {
+        return path.split('/').slice(-2).join('/');
     }
 
-    function alertMessage(message) {
-        alert(message);
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    /** 其他原有函数保持不变，仅需添加以下代码... **/
+
+    /** 初始化时自动选择第一个笔记**/
+    function initializeNotes(noteData) {
+        notes = JSON.parse(noteData);
+        if(notes.length > 0) {
+            selectedNoteId = notes[0].id;
+            showNoteDetail(notes[0]);
+        }
+        renderNotes(notes);
+    }
+
+    /** 搜索时保持选中状态 **/
+    document.getElementById('searchInput').addEventListener('input', function() {
+        const filtered = notes.filter(n =>
+            n.noteTitle.toLowerCase().includes(this.value.toLowerCase())
+        );
+        if(!filtered.some(n => n.id === selectedNoteId)) {
+            selectedNoteId = filtered[0]?.id;
+        }
+        renderNotes(filtered);
+    });
+    function sortNotesByName() {
+        notes.sort((a, b) => a.noteTitle.localeCompare(b.noteTitle));
+        renderNotes(notes);
+    }
+    function sortNotesByUpdateTime() {
+        notes.sort((a, b) => new Date(b.updateTime) - new Date(a.updateTime));
+        renderNotes(notes);
     }
 </script>
 </body>

@@ -70,3 +70,34 @@ https://shields.io/badges/jet-brains-plugins
 https://simpleicons.org/?q=idea
 更新reademe
 
+
+## UI重绘计划V1.0.0
+将笔记UI从swing 更换为基于JCEF嵌入浏览器+H5实现的UI
+
+### v1.0.0 草图UI上下对比
+
+
+
+![image-20250305222241331](https://sheepnote.oss-cn-shenzhen.aliyuncs.com/ita/image-20250305222241331.png)
+
+### 使用LocalRquestHandler替换loadByHtmlString fix 页面加载去除空行的功能
+
+参考
+
+>
+>
+>In cases when a plugin feature implements a web-based UI, the plugin may provide HTML, CSS, and JavaScript files in its distribution or build them on the fly depending on some configuration. The browser cannot easily access such resources. They can be made accessible by implementing proper request handlers, which make them available to the browser at predefined URLs.
+>
+>This approach requires implementing CefRequestHandler, and CefResourceRequestHandler, which map resource paths to resource providers.
+>
+>Serving such resources is implemented by the Image Viewer component responsible for displaying SVG files in IntelliJ Platform-based IDEs. See JCefImageViewer and related classes for the implementation details.
+>
+>
+>REF:
+> https://github.com/copilot/c/8086f966-16ce-413b-87f9-4f3a62e5419e
+> 
+>[ImagePreview CefLocalRequestHandler.kt](https://github.com/JetBrains/intellij-community/blob/idea/243.25659.39/images/src/org/intellij/images/editor/impl/jcef/CefLocalRequestHandler.kt)
+>
+>[embedded-browser-jcef#Loading Resources From Plugin Distribution](https://plugins.jetbrains.com/docs/intellij/embedded-browser-jcef.html#loading-resources-from-plugin-distribution)
+>
+>[LigaAI 在 IDE 插件开发中接入 JCEF 框架](https://zhuanlan.zhihu.com/p/668561545)

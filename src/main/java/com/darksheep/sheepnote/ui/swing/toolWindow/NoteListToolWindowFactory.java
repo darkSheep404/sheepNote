@@ -8,6 +8,7 @@ import com.darksheep.sheepnote.ui.swing.editor.utils.EditorHelper;
 import com.darksheep.sheepnote.ui.swing.toolWindow.divider.CustomSplitPaneUI;
 import com.darksheep.sheepnote.ui.web.brower.JBCefBrowserSingleton;
 import com.darksheep.sheepnote.ui.web.container.BrowserPanel;
+import com.darksheep.sheepnote.ui.web.container.NotePanelWebVersion;
 import com.darksheep.sheepnote.utils.LocalHtmlHelper;
 import com.google.gson.Gson;
 import com.intellij.icons.AllIcons;
@@ -98,51 +99,17 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
         //第三个 浏览器
         Content browserContent = contentFactory.createContent(new BrowserPanel(), "Browser", false);
 
-        Content webNoteContent = buildThirdWebNoteContent(contentFactory);
 
+        Content notePanelWebVersion = contentFactory.createContent(new NotePanelWebVersion(), "NoteList V2", false);
 
         browserContent.setIcon(AllIcons.Actions.IntentionBulb);
         toolWindow.getContentManager().addContent(mainContent);
         // toolWindow.getContentManager().addContent(flowchartContent);
         toolWindow.getContentManager().addContent(browserContent);
         toolWindow.getContentManager().setSelectedContent(mainContent);
-        toolWindow.getContentManager().addContent(webNoteContent);
+        toolWindow.getContentManager().addContent(notePanelWebVersion);
     }
 
-    private Content buildThirdWebNoteContent(ContentFactory contentFactory){
-        // webNote tab
-
-        JBCefBrowser webNoteBrowser = new JBCefBrowser();
-        webNoteBrowser.loadHTML(LocalHtmlHelper.loadByResourceInWebDir("/webNote.html"));
-        //JBCefBrowser webNoteBrowser = new JBCefBrowser(getClass().getResource("/META-INF/web/webNote.html").toString());
-
-
-        webNoteBrowser.openDevtools();
-        CefBrowser cefBrowser = webNoteBrowser.getCefBrowser();
-        try{
-            List<NoteData> noteDataList = NoteDataRepository.getAllNoteData();
-            String noteDataJson = new Gson().toJson(noteDataList);
-            String escapedJson = StringEscapeUtils.escapeJavaScript(noteDataJson);
-            cefBrowser.getClient().addDisplayHandler(new CefDisplayHandlerAdapter() {
-                @Override
-                public void onAddressChange(CefBrowser browser, CefFrame frame, String url) {
-                    String script1= "document.addEventListener('DOMContentLoaded', function () {\n" +
-                            "initializeNotes('" + escapedJson + "');"+
-                            "});";
-                    System.out.println(noteDataJson);
-                    browser.executeJavaScript(script1,null,0);
-                    // webNoteBrowser.getCefBrowser().executeJavaScript("initializeNotes('" + noteDataJson + "');", webNoteBrowser.getCefBrowser().getURL(), 0);
-                    super.onAddressChange(browser, frame, url);
-                }
-            });
-        }
-        catch (Exception e){
-            e.printStackTrace();
-         }
-        Content webNoteContent = contentFactory.createContent(webNoteBrowser.getComponent(), "WebNote", false);
-        webNoteContent.setIcon(AllIcons.Actions.Share);
-        return webNoteContent;
-    }
 
     @NotNull
     private DumbAwareAction initTipsAction() {
