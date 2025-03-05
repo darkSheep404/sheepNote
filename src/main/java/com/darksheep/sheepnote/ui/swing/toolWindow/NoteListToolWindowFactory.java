@@ -8,8 +8,8 @@ import com.darksheep.sheepnote.ui.swing.editor.utils.EditorHelper;
 import com.darksheep.sheepnote.ui.swing.toolWindow.divider.CustomSplitPaneUI;
 import com.darksheep.sheepnote.ui.web.brower.JBCefBrowserSingleton;
 import com.darksheep.sheepnote.ui.web.container.BrowserPanel;
-import com.darksheep.sheepnote.ui.web.container.FlowchartPanel;
 import com.darksheep.sheepnote.utils.LocalHtmlHelper;
+import com.google.gson.Gson;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.Editor;
@@ -23,13 +23,15 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.jcef.JBCefBrowser;
 import com.intellij.util.messages.MessageBus;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.cef.browser.CefBrowser;
+import org.cef.browser.CefFrame;
+import org.cef.handler.CefDisplayHandlerAdapter;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
-import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -89,21 +91,14 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
                 initTipsAction()
         ));
 
-        // 创建 FlowchartPanel
-        JPanel flowchartPanel = new JPanel();
-        JBCefBrowser jbCefBrowser = new JBCefBrowser("baidu.com");
-        jbCefBrowser.openDevtools();
-        flowchartPanel.add(jbCefBrowser.getComponent());
         // 创建一个新的 Content
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
         // 第一个 Content，包含主面板
         Content mainContent = contentFactory.createContent(mainPanel, "NoteList", false);
-
-        // 第二个 Content，包含 FlowchartPanel
-        Content flowchartContent = contentFactory.createContent(new FlowchartPanel().getBrowser().getComponent(), "NoteFlowchart", false);
-
         //第三个 浏览器
         Content browserContent = contentFactory.createContent(new BrowserPanel(), "Browser", false);
+
+        Content webNoteContent = buildThirdWebNoteContent(contentFactory);
 
 
         browserContent.setIcon(AllIcons.Actions.IntentionBulb);
@@ -111,7 +106,44 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
         // toolWindow.getContentManager().addContent(flowchartContent);
         toolWindow.getContentManager().addContent(browserContent);
         toolWindow.getContentManager().setSelectedContent(mainContent);
+        toolWindow.getContentManager().addContent(webNoteContent);
     }
+
+    private Content buildThirdWebNoteContent(ContentFactory contentFactory){
+        // webNote tab
+
+        JBCefBrowser webNoteBrowser = new JBCefBrowser();
+        webNoteBrowser.loadHTML(LocalHtmlHelper.loadByResourceInWebDir("/webNote.html"));
+        //JBCefBrowser webNoteBrowser = new JBCefBrowser(getClass().getResource("/META-INF/web/webNote.html").toString());
+
+
+        webNoteBrowser.openDevtools();
+        CefBrowser cefBrowser = webNoteBrowser.getCefBrowser();
+        try{
+            List<NoteData> noteDataList = NoteDataRepository.getAllNoteData();
+            String noteDataJson = new Gson().toJson(noteDataList);
+            String escapedJson = StringEscapeUtils.escapeJavaScript(noteDataJson);
+            cefBrowser.getClient().addDisplayHandler(new CefDisplayHandlerAdapter() {
+                @Override
+                public void onAddressChange(CefBrowser browser, CefFrame frame, String url) {
+                    String script1= "document.addEventListener('DOMContentLoaded', function () {\n" +
+                            "initializeNotes('" + escapedJson + "');"+
+                            "});";
+                    System.out.println(noteDataJson);
+                    browser.executeJavaScript(script1,null,0);
+                    // webNoteBrowser.getCefBrowser().executeJavaScript("initializeNotes('" + noteDataJson + "');", webNoteBrowser.getCefBrowser().getURL(), 0);
+                    super.onAddressChange(browser, frame, url);
+                }
+            });
+        }
+        catch (Exception e){
+            e.printStackTrace();
+         }
+        Content webNoteContent = contentFactory.createContent(webNoteBrowser.getComponent(), "WebNote", false);
+        webNoteContent.setIcon(AllIcons.Actions.Share);
+        return webNoteContent;
+    }
+
     @NotNull
     private DumbAwareAction initTipsAction() {
         return new DumbAwareAction("about and tips", "", AllIcons.Actions.IntentionBulb) {

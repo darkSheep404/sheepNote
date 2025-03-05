@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web Note List</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+        }
+        #container {
+            display: flex;
+            width: 100%;
+        }
+        #noteList {
+            width: 30%;
+            border-right: 1px solid #ccc;
+            overflow-y: auto;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .noteItem {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+        .noteItem:hover {
+            background-color: #f0f0f0;
+        }
+        #noteDetail {
+            width: 70%;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .noteTitle {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .noteTime {
+            color: #888;
+            margin-bottom: 20px;
+        }
+        .noteContent {
+            white-space: pre-wrap;
+            font-family: monospace;
+            background-color: #f7f7f7;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+<div id="container">
+    <ul id="noteList"></ul>
+    <div id="noteDetail">
+        <div class="noteTitle" id="noteTitle"></div>
+        <div class="noteTime" id="noteTime"></div>
+        <div class="noteContent" id="noteContent"></div>
+    </div>
+</div>
+<script>
+    /*const noteData = `[
+        {
+            "noteTitle": "Java Note",
+            "createTime": "2021-01-01 10:00:00",
+            "updateTime": "2021-01-01 10:00:00",
+            "selectCode": "public class Main"
+        },
+        {
+            "noteTitle": "JavaScript Note",
+            "createTime": "2021-01-01 10:00:00",
+            "updateTime": "2021-01-01 10:00:00",
+            "selectCode": "console.log"
+        }
+    ]`;
+    initializeNotes(noteData);*/
+    function renderNotes(notes) {
+        const noteList = document.getElementById('noteList');
+        notes.forEach(note => {
+            const li = document.createElement('li');
+            li.className = 'noteItem';
+            li.textContent = note.noteTitle;
+            li.onclick = () => showNoteDetail(note);
+            noteList.appendChild(li);
+        });
+    }
+
+    function showNoteDetail(note) {
+        document.getElementById('noteTitle').textContent = note.noteTitle;
+        document.getElementById('noteTime').textContent = `创建时间: ${note.createTime} 更新时间: ${note.updateTime}`;
+        document.getElementById('noteContent').textContent = note.selectCode;
+    }
+
+    function initializeNotes(noteData) {
+        const notes = JSON.parse(noteData);
+        renderNotes(notes);
+        if (notes.length > 0) {
+            showNoteDetail(notes[0]);
+        }
+    }
+
+    function alertMessage(message) {
+        alert(message);
+    }
+</script>
+</body>
+</html>

@@ -8,6 +8,9 @@ import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.ui.jcef.JBCefBrowser;
+import org.cef.browser.CefBrowser;
+import org.cef.browser.CefFrame;
+import org.cef.handler.CefDisplayHandlerAdapter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,7 +26,48 @@ public class BrowserPanel extends SimpleToolWindowPanel {
     public BrowserPanel() {
         super(true, true);
         jbCefBrowser = new JBCefBrowser("bing.com");
-
+        /**
+         * 未执行
+         */
+        jbCefBrowser.getCefBrowser().executeJavaScript(
+                "alert('Hello World!')",
+                jbCefBrowser.getCefBrowser().getURL(), 0
+        );
+        jbCefBrowser.getCefBrowser().executeJavaScript(
+                "alert('Hello World!')",
+                jbCefBrowser.getCefBrowser().getURL(), 0
+        );
+        String script1= "document.addEventListener('DOMContentLoaded', function () {\n" +
+                "   document.body.innerHTML = '<h1>Hello, World!</h1>'" +
+                "});";
+        jbCefBrowser.getCefBrowser().executeJavaScript(
+                "console.log('Hello World!')",
+                jbCefBrowser.getCefBrowser().getURL(), 0
+        );
+        jbCefBrowser.getCefBrowser().executeJavaScript(
+                script1,
+                jbCefBrowser.getCefBrowser().getURL(), 0
+        );
+        jbCefBrowser.getCefBrowser().executeJavaScript("document.body.innerHTML = '<h1>Hello, World!</h1>'", jbCefBrowser.getCefBrowser().getURL(), 0);
+        jbCefBrowser.getJBCefClient().addDisplayHandler(new CefDisplayHandlerAdapter() {
+            @Override
+            public void onAddressChange(CefBrowser browser, CefFrame frame, String url) {
+                /*正常执行*/
+                jbCefBrowser.getCefBrowser().executeJavaScript(
+                        "alert('Hello World!')",
+                        jbCefBrowser.getCefBrowser().getURL(), 0
+                );
+                jbCefBrowser.getCefBrowser().executeJavaScript(
+                        "document.body.innerHTML = '<h1>Hello, World!</h1>'",
+                        jbCefBrowser.getCefBrowser().getURL(), 0
+                );
+                jbCefBrowser.getCefBrowser().executeJavaScript(
+                        script1,
+                        jbCefBrowser.getCefBrowser().getURL(), 0
+                );
+                super.onAddressChange(browser, frame, url);
+            }
+        }, jbCefBrowser.getCefBrowser());
         urlField = new JTextField("https://bing.com");
         urlField.addActionListener(e -> navigateToUrl());
         urlField.setPreferredSize(new Dimension(600, 30));
