@@ -97,6 +97,23 @@
             gap: 16px;
         }
 
+        /* 新增文件路径样式 */
+        .notePath {
+            font-size: 12px;
+            color: #666;
+            margin: 8px 0;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 4px;
+            transition: background 0.2s;
+            display: flex;
+        }
+
+        .notePath:hover {
+            background: rgba(0, 122, 255, 0.05);
+            text-decoration: underline;
+        }
+
         .noteContent {
             white-space: pre-wrap;
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas;
@@ -201,6 +218,30 @@
                 --hover-background: rgba(0, 122, 255, 0.15);
             }
         }
+        .context-menu {
+            display: none;
+            position: absolute;
+            z-index: 1000;
+            background: var(--secondary-background);
+            border: 1px solid var(--control-color);
+            border-radius: var(--corner-radius);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .context-menu-item {
+            padding:8px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .context-menu-item:hover {
+            background: var(--hover-background);
+            color: var(--accent-color);
+        }
+        .context-menu:hover {
+            background: var(--hover-background);
+            color: var(--accent-color);
+        }
     </style>
 </head>
 <body>
@@ -222,18 +263,23 @@
 
         <!-- 排序按钮 -->
         <div class="sort-item" onclick="sortNotesByName()">
-            <svg class="nav-icon" viewBox="0 0 24 24">
-                <path d="M8 6h13M8 12h13M8 18h13M3 6h1m-1 6h1m-1 6h1"/>
+            <svg t="1741245290052" class="nav-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="10287" width="16" height="16"><path d="M839.6 433.8L749 150.5c-1.2-3.9-4.8-6.5-8.9-6.5h-77.4c-4.1 0-7.6 2.6-8.9 6.5l-91.3 283.3c-0.3 0.9-0.5 1.9-0.5 2.9 0 5.1 4.2 9.3 9.3 9.3h56.4c4.2 0 7.8-2.8 9-6.8l17.5-61.6h89l17.3 61.5c1.1 4 4.8 6.8 9 6.8h61.2c1 0 1.9-0.1 2.8-0.4 2.4-0.8 4.3-2.4 5.5-4.6 1.1-2.2 1.3-4.7 0.6-7.1zM663.3 325.5l32.8-116.9h6.3l32.1 116.9h-71.2z" p-id="10288" fill="#2c2c2c"></path><path d="M806.8 818.4H677.2v-0.4l132.6-188.9c1.1-1.6 1.7-3.4 1.7-5.4v-36.4c0-5.1-4.2-9.3-9.3-9.3h-204c-5.1 0-9.3 4.2-9.3 9.3v43c0 5.1 4.2 9.3 9.3 9.3h122.6v0.4L587.7 828.9c-1.1 1.6-1.7 3.4-1.7 5.4v36.4c0 5.1 4.2 9.3 9.3 9.3h211.4c5.1 0 9.3-4.2 9.3-9.3v-43c0.1-5.1-4.1-9.3-9.2-9.3z" fill="#2c2c2c" p-id="10289"></path><path d="M416 702h-76V172c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v530h-76c-6.7 0-10.5 7.8-6.3 13l112 141.9c3.2 4.1 9.4 4.1 12.6 0l112-141.9c4.1-5.2 0.4-13-6.3-13z" p-id="10290" fill="#2c2c2c"></path>
             </svg>
             <span>Name</span>
         </div>
 
         <div class="sort-item" onclick="sortNotesByUpdateTime()">
-            <svg class="nav-icon" viewBox="0 0 24 24">
-                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            <svg t="1741245422374" class="nav-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="13385" width="16" height="16">
+                <path d="M1024 496c0 26.496-22.208 48-49.536 48a48.768 48.768 0 0 1-49.536-48c0-220.928-184.896-400-412.928-400S99.072 275.072 99.072 496 283.968 896 512 896c27.392 0 49.536 21.504 49.536 48S539.392 992 512 992C229.248 992 0 769.92 0 496 0 222.08 229.248 0 512 0s512 222.08 512 496zM858.88 669.248v203.968l83.84-67.84a50.624 50.624 0 0 1 69.76 6.016c17.536 20.352 14.72 50.56-6.272 67.584l-165.12 133.76c-32.256 26.112-81.344 3.904-81.344-36.8V669.248c0-26.56 22.208-48 49.536-48 27.392 0 49.536 21.44 49.536 48z m-83.584 341.632l-152.96-139.968a46.976 46.976 0 0 1-2.048-67.84 50.688 50.688 0 0 1 70.08-1.92l152.96 139.968c19.84 18.176 20.8 48.576 1.984 67.84a50.688 50.688 0 0 1-70.016 1.92z m-213.76-759.552v215.424h148.672c27.328 0 49.536 21.44 49.536 48 0 26.496-22.208 48-49.536 48H512a48.768 48.768 0 0 1-49.536-48V251.328c0-26.496 22.144-48 49.536-48 27.392 0 49.536 21.504 49.536 48z" p-id="13386" fill="#2c2c2c"></path>
             </svg>
             <span>Date</span>
         </div>
+            <div class="sort-item" onclick="refreshNotes()">
+                <svg t="1741245069141" class="nav-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="9108">
+                    <path d="M87.552 225.645714l59.318857 46.665143c76.434286-113.078857 228.790857-198.217143 364.982857-198.217143 165.668571 0 336.749714 122.075429 401.042286 264.045715-50.249143 18.870857-140.288 95.451429-140.288 95.451428L1023.634286 614.4V511.853714C1023.707429 229.668571 794.038857 0 511.853714 0a511.268571 511.268571 0 0 0-424.301714 225.645714z m31.158857 454.948572C168.96 661.430857 251.026286 590.262857 251.026286 590.262857L0 409.453714v102.4c0 282.185143 229.668571 511.853714 511.853714 511.853715a511.268571 511.268571 0 0 0 424.374857-225.645715l-58.587428-44.032c-76.434286 113.005714-229.449143 197.924571-365.787429 197.924572-165.668571 0-328.850286-129.462857-393.142857-271.36z" p-id="9109" fill="#2c2c2c"></path>
+                </svg>
+                <span>Refresh</span>
+            </div>
     </div>
         <ul id="noteList"></ul>
     </div>
@@ -245,28 +291,47 @@
             <span id="titleText"></span>
         </div>
         <div class="noteTime" id="noteTime"></div>
+        <div class="notePath" id="notePathRow">
+            <div id="notePath" style="margin-right: 2px"></div>
+            <svg t="1741241914000" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5283" width="16" height="16"><path d="M757.938 202H567c-24.852 0-45-20.148-45-45S542.148 112 567 112h300c24.852 0 45 20.148 45 45v300c0 24.852-20.148 45-45 45S822 481.852 822 457v-191.78L540.73 544.91c-17.622 17.524-46.116 17.444-63.64-0.18-17.524-17.622-17.444-46.116 0.18-63.64L757.938 202zM867 652c24.852 0 45 20.148 45 45V762c0 82.842-67.158 150-150 150H262c-82.842 0-150-67.158-150-150V262c0-82.842 67.158-150 150-150h65c24.852 0 45 20.148 45 45S351.852 202 327 202H262c-33.138 0-60 26.862-60 60v500c0 33.138 26.862 60 60 60h500c33.138 0 60-26.862 60-60v-65c0-24.852 20.148-45 45-45z" fill="#444444" p-id="5284"></path></svg>
+        </div>
         <div class="noteContent" id="noteContent"></div>
     </div>
+</div>
+<div id="contextMenu" class="context-menu">
+    <div class="context-menu-item" onclick="deleteNote()">Delete</div>
 </div>
 <script>
     let notes = [
         {
-            "id": 4,
-            "noteTitle": "this Note",
+            "id": 1,
+            "noteTitle": "A this Note",
             "noteFilePath": "D:/coderepo/com.github/sheepNote/src/main/java/com/darksheep/sheepnote/toolWindow/NoteListController.java",
             "noteLineNumber": 105,
             "selectCode": "oteDataList.remove(selectedNote);",
             "createTime": "May 26, 2023, 12:58:54 AM",
             "updateTime": "May 26, 2023, 12:58:54 AM"
+        },
+        {
+            "id": 4,
+            "noteTitle": "B this Note",
+            "noteFilePath": "D:/coderepo/Test.java",
+            "noteLineNumber": 105,
+            "selectCode": "oteDataList.remove(selectedNote);",
+            "createTime": "May 26, 2024, 12:58:54 AM",
+            "updateTime": "May 26, 2024, 12:58:54 AM"
         }
     ];
     let selectedNoteId = null;
+    let noteItem = null;
+    let contextMenuNoteId = null;
     initializeNotes(JSON.stringify(notes));
     function renderNotes(filteredNotes) {
         const noteList = document.getElementById('noteList');
         noteList.innerHTML = '';
         filteredNotes.forEach(note => {
             const li = document.createElement('li');
+            li.oncontextmenu = (e) => showContextMenu(e, note.id);
             li.className = `noteItem${selectedNoteId === note.id ? ' selected' : ''}`;
             li.innerHTML = `
                 <div style="flex:1">${note.noteTitle}</div>
@@ -277,8 +342,32 @@
         });
     }
 
+    function showContextMenu(event, noteId) {
+        console.log('showContextMenu',noteId);
+        event.preventDefault();
+        contextMenuNoteId = noteId;
+        const contextMenu = document.getElementById('contextMenu');
+        contextMenu.style.display = 'block';
+        contextMenu.style.left = `${event.pageX}px`;
+        contextMenu.style.top = `${event.pageY}px`;
+    }
+    function deleteNote() {
+        notes = notes.filter(note => note.id !== contextMenuNoteId);
+        contextMenuNoteId = null;
+        document.getElementById('contextMenu').style.display = 'none';
+        renderNotes(notes);
+        if (notes.length > 0) {
+            selectNote(notes[0]);
+        } else {
+            document.getElementById('noteDetail').innerHTML = '';
+        }
+    }
+    document.addEventListener('click', () => {
+        document.getElementById('contextMenu').style.display = 'none';
+    })
     function selectNote(note) {
         selectedNoteId = note.id;
+        noteItem =note;
         showNoteDetail(note);
         renderNotes(notes.filter(n =>
             document.getElementById('searchInput').value ?
@@ -292,8 +381,13 @@
             <span>Created: ${formatDate(note.createTime)}</span>
             <span>Updated: ${formatDate(note.updateTime)}</span>
         `;
+        document.getElementById('notePath').textContent = note.noteFilePath;
         document.getElementById('noteContent').textContent = note.selectCode;
     }
+    /* 文件路径点击处理 */
+    document.getElementById('notePath').onclick = function(e) {
+        window.openLink(JSON.stringify(noteItem));
+    };
 
     function shortenPath(path) {
         return path.split('/').slice(-2).join('/');
@@ -301,12 +395,14 @@
 
     function formatDate(dateStr) {
         const date = new Date(dateStr);
-        return date.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
+        return date.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
             hour: '2-digit',
-            minute: '2-digit'
-        });
+            minute: '2-digit',
+            hour12: false
+        }).replace(',', '');
     }
 
     /** 其他原有函数保持不变，仅需添加以下代码... **/
@@ -345,12 +441,22 @@
         }
         renderNotes(filtered);
     });
+
+    let sortByNameAsc = true;
+    let sortByTimeAsc = true;
+
     function sortNotesByName() {
-        notes.sort((a, b) => a.noteTitle.localeCompare(b.noteTitle));
+        notes.sort((a, b) => sortByNameAsc ? a.noteTitle.localeCompare(b.noteTitle) : b.noteTitle.localeCompare(a.noteTitle));
+        sortByNameAsc = !sortByNameAsc;
         renderNotes(notes);
     }
+
     function sortNotesByUpdateTime() {
-        notes.sort((a, b) => new Date(b.updateTime) - new Date(a.updateTime));
+        notes.sort((a, b) => sortByTimeAsc ? new Date(b.updateTime) - new Date(a.updateTime) : new Date(a.updateTime) - new Date(b.updateTime));
+        sortByTimeAsc = !sortByTimeAsc;
+        renderNotes(notes);
+    }
+    function refreshNotes() {
         renderNotes(notes);
     }
 </script>

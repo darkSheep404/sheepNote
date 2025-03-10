@@ -58,28 +58,34 @@ public class NoteDataRepository {
      * @return 所有笔记数据对象的列表
      * @throws SQLException 查询失败抛出异常
      */
-    public static List<NoteData> getAllNoteData() throws SQLException, ParseException {
-        String sql = "SELECT * FROM notes";
-        PreparedStatement statement = connection.prepareStatement(sql);
-        ResultSet resultSet = statement.executeQuery();
+    public static List<NoteData> getAllNoteData()  {
         List<NoteData> noteDataList = new ArrayList<>();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        while (resultSet.next()) {
-            NoteData noteData = new NoteData();
-            noteData.id = resultSet.getInt("id");
-            noteData.noteTitle = resultSet.getString("title");
-            noteData.noteFilePath = resultSet.getString("file_path");
-            noteData.noteLineNumber = resultSet.getInt("line_number");
-            noteData.selectCode = resultSet.getString("select_code");
-            String createTime = resultSet.getString("create_time");
-            String updateTime = resultSet.getString("update_time");
-            noteData.createTime =dateFormat.parse(createTime);
-            noteData.updateTime = dateFormat.parse(updateTime);
-            noteDataList.add(noteData);
+        try{
+            String sql = "SELECT * FROM notes";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            while (resultSet.next()) {
+                NoteData noteData = new NoteData();
+                noteData.id = resultSet.getInt("id");
+                noteData.noteTitle = resultSet.getString("title");
+                noteData.noteFilePath = resultSet.getString("file_path");
+                noteData.noteLineNumber = resultSet.getInt("line_number");
+                noteData.selectCode = resultSet.getString("select_code");
+                String createTime = resultSet.getString("create_time");
+                String updateTime = resultSet.getString("update_time");
+                noteData.createTime =dateFormat.parse(createTime);
+                noteData.updateTime = dateFormat.parse(updateTime);
+                noteDataList.add(noteData);
+            }
+            resultSet.close();
+            statement.close();
+            return noteDataList;
+        } catch (SQLException | ParseException e) {
+            e.printStackTrace();
+            return noteDataList;
         }
-        resultSet.close();
-        statement.close();
-        return noteDataList;
+
     }
 
     public static void deleteNoteData(NoteData noteData){

@@ -44,16 +44,8 @@ public class CustomEditorFileOpenedListener implements FileEditorManagerListener
          * 需要借助Project project 获取ToolsWindow进而获取数据
          */
 
-        List<NoteData> noteDataList = null;
-        try {
-            noteDataList = NoteDataRepository.getAllNoteData();
-            noteDataList = noteDataList.stream().filter(noteData -> StringUtils.equals(virtualFile.getPath(),noteData.getNoteFilePath()) ).collect(Collectors.toList());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-
+        List<NoteData> noteDataList = NoteDataRepository.getAllNoteData();
+        noteDataList = noteDataList.stream().filter(noteData -> StringUtils.equals(virtualFile.getPath(),noteData.getNoteFilePath()) ).collect(Collectors.toList());
         for (NoteData noteData : noteDataList) {
             EditorHelper.drawNoteAddNoteNumber(editor,noteData);
         }

@@ -23,6 +23,9 @@ public class NoteData {
         this.noteLineNumber = noteLineNumber;
         this.selectCode = selectCode;
     }
+    public static NoteData buildExampleNote(){
+        return new NoteData("this note will auto disappear after you take first note and restart idea", "D:/sheepnote/data.sqllite", 1, "this note will auto disappear after you take first note and restart idea");
+    }
 
     public String getNoteTitle() {
         return noteTitle;

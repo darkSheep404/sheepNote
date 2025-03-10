@@ -5,13 +5,19 @@ import com.darksheep.sheepnote.data.NoteData;
 
 import com.darksheep.sheepnote.ui.web.handler.JBCefLocalRequestHandler;
 import com.darksheep.sheepnote.ui.web.handler.JBCefStreamResourceHandler;
-import com.darksheep.sheepnote.utils.LocalHtmlHelper;
 import com.google.gson.Gson;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.OpenFileDescriptor;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.ui.jcef.JBCefApp;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.ui.jcef.JBCefBrowser;
+import com.intellij.ui.jcef.JBCefBrowserBase;
+import com.intellij.ui.jcef.JBCefJSQuery;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.cef.browser.CefBrowser;
 import org.cef.browser.CefFrame;
@@ -24,54 +30,93 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+
+
 
 public class NotePanelWebVersion extends SimpleToolWindowPanel {
 
     public NotePanelWebVersion() {
         super(true, true);
         JBCefBrowser webNoteBrowser = new JBCefBrowser();
-        // Create a local resource request handler
+        // Create a local resource request handler and Add all resources from the directory
         JBCefLocalRequestHandler localRequestHandler = new JBCefLocalRequestHandler("http", "localhost");
-        // Add all resources from the directory
+        //
         addDirectoryResources(localRequestHandler, "/META-INF/web");
 
-
+        //废弃过去使用的 webNoteBrowser.loadHTML(LocalHtmlHelper.loadByResourceInWebDir("/webNote.html"));
         webNoteBrowser.getJBCefClient().addRequestHandler(localRequestHandler,webNoteBrowser.getCefBrowser());
-        // Load the main HTML resource
         webNoteBrowser.loadURL("http://localhost/webNote.html");
-        //webNoteBrowser.loadHTML(LocalHtmlHelper.loadByResourceInWebDir("/webNote.html"));
-
         webNoteBrowser.openDevtools();
-        CefBrowser cefBrowser = webNoteBrowser.getCefBrowser();
-        try{
-            List<NoteData> noteDataList = NoteDataRepository.getAllNoteData();
-            String noteDataJson = new Gson().toJson(noteDataList);
-            String escapedJson = StringEscapeUtils.escapeJavaScript(noteDataJson);
-            cefBrowser.getClient().addDisplayHandler(new CefDisplayHandlerAdapter() {
-                @Override
-                public void onAddressChange(CefBrowser browser, CefFrame frame, String url) {
-                    super.onAddressChange(browser, frame, url);
-                    String script1= "document.addEventListener('DOMContentLoaded', function () {\n" +
-                            "initializeNotes('" + escapedJson + "');"+
-                            "});";
-                    System.out.println(noteDataJson);
-                    browser.executeJavaScript(script1,null,0);
-                    // webNoteBrowser.getCefBrowser().executeJavaScript("initializeNotes('" + noteDataJson + "');", webNoteBrowser.getCefBrowser().getURL(), 0);
-
-                }
-            });
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
+        initNoteListFromDB(webNoteBrowser);
         setContent(webNoteBrowser.getComponent());
         // Dispose resources when no longer needed
         Disposer.register(ApplicationManager.getApplication(), webNoteBrowser);
+    }
+
+    private  void initNoteListFromDB(JBCefBrowser webNoteBrowser) {
+        CefBrowser cefBrowser = webNoteBrowser.getCefBrowser();
+        List<NoteData> noteDataList= NoteDataRepository.getAllNoteData();
+        if(noteDataList.isEmpty())
+            noteDataList.add(NoteData.buildExampleNote());
+        String noteDataJson = new Gson().toJson(noteDataList);
+        String escapedJson = StringEscapeUtils.escapeJavaScript(noteDataJson);
+
+        JBCefJSQuery openLinkQuery = JBCefJSQuery.create((JBCefBrowserBase)webNoteBrowser);
+        //TODO 刷新,编辑,按照文件夹/tag 分类查看
+        //TODO 图表形式组织笔记==>如何实现
+        openLinkQuery.addHandler((noteItemJson)->{
+            NoteData noteItem = new Gson().fromJson(noteItemJson, NoteData.class);
+            Project currentProject = IdeFocusManager.getGlobalInstance().getLastFocusedFrame().getProject();
+            if (currentProject == null) {
+                return new JBCefJSQuery.Response("ERROR",400,"Current project not found");
+            }
+            VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(noteItem.getNoteFilePath());
+            if(virtualFile==null){
+                return new JBCefJSQuery.Response("ERROR",500,"File not found");
+            }
+            FileEditorManager editorManager = FileEditorManager.getInstance(currentProject);
+            OpenFileDescriptor descriptor = new OpenFileDescriptor(currentProject, virtualFile, noteItem.getNoteLineNumber() - 1, 0);
+            /**
+             * use editorManager.openEditor(descriptor, true); in Application().invokeLater
+             * fix EventQueue.isDispatchThread()=false
+             * Current thread: Thread[Thread-1200,5,main] 1324346015
+             * https://intellij-support.jetbrains.com/hc/en-us/community/posts/7602780460306-Access-is-allowed-from-event-dispatch-thread-only
+             * UI code must be run on EDT thread, so try using Application.invokeLater https://plugins.jetbrains.com/docs/intellij/general-threading-rules.html#modality-and-invokelater
+             */
+            ApplicationManager.getApplication().invokeLater(()->{
+                editorManager.openEditor(descriptor, true);
+            });
+            return new JBCefJSQuery.Response("OK");
+        });
+
+        cefBrowser.getClient().addDisplayHandler(new CefDisplayHandlerAdapter() {
+            @Override
+            public void onAddressChange(CefBrowser browser, CefFrame frame, String url) {
+                super.onAddressChange(browser, frame, url);
+                //需要dom加载完成再执行 否则会报错document.innerHTML = null
+                String script1= "document.addEventListener('DOMContentLoaded', function () {\n" +
+                        "initializeNotes('" + escapedJson + "');"+
+                        "});";
+                String script2 =  "window.openLink = function(link) {" +
+                        openLinkQuery.inject(
+                                "link",
+                                "function(response){" +
+                                        "console.log('Link opened successfully');" +
+                                        "}",
+                                "function(error_code,error_message){" +
+                                        "alert(error_code+ ':' + error_message)" +
+                                        "}")
+                        +"};";
+                System.out.println(noteDataJson);
+                browser.executeJavaScript(script1,null,0);
+                browser.executeJavaScript(script2,null,0);
+            }
+        });
+
     }
 
 

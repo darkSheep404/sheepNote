@@ -151,18 +151,9 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
     }
 
     private void prepareNoteListViewAndController(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        List<NoteData> noteDataList = new ArrayList<>();
-        try {
-            noteDataList = NoteDataRepository.getAllNoteData();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if(noteDataList.size()==0){
-            NoteData noteData = new NoteData("this note will auto disappear after you take first note and restart idea", "D:/sheepnote/data.sqllite", 1, "this note will auto disappear after you take first note and restart idea");
-            noteData.id =-1;
-            noteData.createTime = new Date();
-            noteData.updateTime = new Date();
-            noteDataList.add(noteData);
+        List<NoteData> noteDataList= NoteDataRepository.getAllNoteData();
+        if(noteDataList.isEmpty()){
+            noteDataList.add(NoteData.buildExampleNote());
         }
         // 初始化笔记列表
         for (NoteData noteData : noteDataList) {
