@@ -2,9 +2,9 @@ package com.darksheep.sheepnote.ui.web.container;
 
 import com.darksheep.sheepnote.config.NoteDataRepository;
 import com.darksheep.sheepnote.data.NoteData;
-
 import com.darksheep.sheepnote.ui.web.handler.JBCefLocalRequestHandler;
 import com.darksheep.sheepnote.ui.web.handler.JBCefStreamResourceHandler;
+import com.darksheep.sheepnote.ui.web.handler.WebResourceManager;
 import com.google.gson.Gson;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -35,24 +35,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-
-
 public class NotePanelWebVersion extends SimpleToolWindowPanel {
 
     public NotePanelWebVersion() {
         super(true, true);
         JBCefBrowser webNoteBrowser = new JBCefBrowser();
-        // Create a local resource request handler and Add all resources from the directory
-        JBCefLocalRequestHandler localRequestHandler = new JBCefLocalRequestHandler("http", "localhost");
-        //
-        addDirectoryResources(localRequestHandler, "/META-INF/web");
-
-        //废弃过去使用的 webNoteBrowser.loadHTML(LocalHtmlHelper.loadByResourceInWebDir("/webNote.html"));
-        webNoteBrowser.getJBCefClient().addRequestHandler(localRequestHandler,webNoteBrowser.getCefBrowser());
+        
+        WebResourceManager.setupBrowser(webNoteBrowser);
         webNoteBrowser.loadURL("http://localhost/webNote.html");
         webNoteBrowser.openDevtools();
+        
         initNoteListFromDB(webNoteBrowser);
         setContent(webNoteBrowser.getComponent());
+        
         // Dispose resources when no longer needed
         Disposer.register(ApplicationManager.getApplication(), webNoteBrowser);
     }

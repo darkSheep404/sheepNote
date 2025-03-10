@@ -1,0 +1,174 @@
+.toolbar {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    background: #f5f5f5;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.toolbar button {
+    margin-right: 10px;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background: white;
+    cursor: pointer;
+}
+
+.toolbar button:hover {
+    background: #e6e6e6;
+}
+
+#flowchartContainer {
+    position: relative;
+    height: calc(100vh - 50px);
+    background: #fafafa;
+    overflow: auto;
+    padding: 20px;
+}
+
+.flowchart-node {
+    position: absolute;
+    min-width: 120px;
+    padding: 10px;
+    border: 1px solid #2196F3;
+    border-radius: 5px;
+    background: white;
+    cursor: move;
+    z-index: 10;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.flowchart-node:hover {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.search-panel {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 1000;
+    min-width: 300px;
+}
+
+.search-panel input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    margin-bottom: 10px;
+}
+
+.search-results {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+.search-result-item {
+    padding: 8px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.search-result-item:hover {
+    background: #f5f5f5;
+}
+
+.search-panel-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.search-panel-buttons button {
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    min-width: 300px;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    margin-bottom: 15px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.context-menu {
+    display: none;
+    position: fixed;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+
+.menu-item {
+    padding: 8px 15px;
+    cursor: pointer;
+}
+
+.menu-item:hover {
+    background: #f5f5f5;
+}
+
+/* jsPlumb连接线样式 */
+.jtk-connector {
+    z-index: 4;
+}
+
+.jtk-endpoint {
+    z-index: 5;
+    cursor: pointer;
+}
+
+.jtk-overlay {
+    z-index: 6;
+}
+
+.jtk-connector:hover {
+    stroke-width: 3px;
+} 

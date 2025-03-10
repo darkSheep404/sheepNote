@@ -81,6 +81,8 @@ public class JBCefStreamResourceHandler extends CefResourceHandlerAdapter {
         try {
             myInputStream.close();
         } catch (IOException ignored) {
+            System.out.println("Failed to close stream");
+            ignored.printStackTrace();
         }
     }
 }

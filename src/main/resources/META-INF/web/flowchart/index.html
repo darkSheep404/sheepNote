@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SheepNote Flowchart</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="jsplumb.min.js"></script>
+</head>
+<body>
+    <div class="toolbar">
+        <button id="newNode">新建节点</button>
+        <button id="save">保存流程图</button>
+        <button id="refresh" style="margin-left: auto;">
+            <span style="margin-right: 5px;">⟳</span>刷新页面
+        </button>
+    </div>
+    
+    <div id="searchPanel" class="search-panel">
+        <input type="text" id="searchInput" placeholder="搜索笔记或输入文本">
+        <div id="searchResults" class="search-results"></div>
+        <div class="search-panel-buttons">
+            <button id="useCustomText">使用输入文本</button>
+            <button id="cancelSearch">取消</button>
+        </div>
+    </div>
+
+    <div id="saveDialog" class="modal">
+        <div class="modal-content">
+            <h3>保存流程图</h3>
+            <input type="text" id="flowchartName" placeholder="输入流程图名称">
+            <div class="modal-buttons">
+                <button id="confirmSave">保存</button>
+                <button id="cancelSave">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="contextMenu" class="context-menu">
+        <div class="menu-item" id="jumpToFile">跳转到文件</div>
+        <div class="menu-item" id="deleteNode">删除节点</div>
+    </div>
+
+    <div id="flowchartContainer"></div>
+
+    <script>
+        // 添加刷新按钮的事件监听（放在最前面）
+        document.getElementById('refresh').addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        const instance = jsPlumb.getInstance({
+            Container: "flowchartContainer",
+            ConnectionsDetachable: true,
+            EndpointStyle: { fill: "#2196F3" },
+            ConnectorStyle: { stroke: "#2196F3", strokeWidth: 2 }
+        });
+
+        let nodeCounter = 0;
+        let currentMousePos = { x: 0, y: 0 };
+        let activeNode = null;
+
+        // 跟踪鼠标位置
+        document.addEventListener('mousemove', (e) => {
+            currentMousePos.x = e.clientX;
+            currentMousePos.y = e.clientY;
+        });
+
+        document.getElementById('newNode').addEventListener('click', () => {
+            showSearchPanel();
+        });
+
+        document.getElementById('save').addEventListener('click', () => {
+            document.getElementById('saveDialog').style.display = 'block';
+        });
+
+        document.getElementById('confirmSave').addEventListener('click', () => {
+            const name = document.getElementById('flowchartName').value;
+            if (name) {
+                const flowchartData = {
+                    name: name,
+                    content: saveCurrentFlowchart()
+                };
+                window.saveFlowchart(flowchartData);
+                document.getElementById('saveDialog').style.display = 'none';
+            }
+        });
+
+        document.getElementById('cancelSave').addEventListener('click', () => {
+            document.getElementById('saveDialog').style.display = 'none';
+        });
+
+        async function showSearchPanel() {
+            const searchPanel = document.getElementById('searchPanel');
+            searchPanel.style.display = 'block';
+            
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+            searchInput.value = '';
+            searchInput.focus();
+            
+            searchInput.addEventListener('input', async (e) => {
+                const query = e.target.value;
+                if (query.length > 0) {
+                    try {
+                        const results = await window.searchNotes(query);
+                        displaySearchResults(results);
+                    } catch (error) {
+                        console.error('搜索失败:', error);
+                    }
+                } else {
+                    searchResults.innerHTML = '';
+                }
+            });
+        }
+
+        function displaySearchResults(results) {
+            const searchResults = document.getElementById('searchResults');
+            searchResults.innerHTML = '';
+            
+            results.forEach(result => {
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                item.textContent = result.title;
+                item.addEventListener('click', () => {
+                    createNode(result.title, currentMousePos, {
+                        path: result.path,
+                        id: result.id
+                    });
+                    hideSearchPanel();
+                });
+                searchResults.appendChild(item);
+            });
+        }
+
+        document.getElementById('useCustomText').addEventListener('click', () => {
+            const text = document.getElementById('searchInput').value;
+            if (text) {
+                createNode(text, currentMousePos);
+                hideSearchPanel();
+            }
+        });
+
+        document.getElementById('cancelSearch').addEventListener('click', hideSearchPanel);
+
+        function hideSearchPanel() {
+            document.getElementById('searchPanel').style.display = 'none';
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchResults').innerHTML = '';
+        }
+
+        function createNode(text, position, noteData = null) {
+            const nodeId = `node-${++nodeCounter}`;
+            const node = document.createElement('div');
+            node.id = nodeId;
+            node.className = 'flowchart-node';
+            node.innerHTML = text;
+            node.style.left = `${position.x}px`;
+            node.style.top = `${position.y}px`;
+            
+            if (noteData) {
+                node.dataset.notePath = noteData.path;
+                node.dataset.noteId = noteData.id;
+            }
+
+            document.getElementById('flowchartContainer').appendChild(node);
+
+            instance.draggable(nodeId);
+
+            instance.addEndpoint(nodeId, {
+                anchor: "Right",
+                isSource: true,
+                connectorStyle: { stroke: "#2196F3", strokeWidth: 2 },
+                connectionType: "basic"
+            });
+
+            instance.addEndpoint(nodeId, {
+                anchor: "Left",
+                isTarget: true,
+                connectorStyle: { stroke: "#2196F3", strokeWidth: 2 },
+                connectionType: "basic"
+            });
+
+            node.addEventListener('contextmenu', showContextMenu);
+
+            return node;
+        }
+
+        function showContextMenu(e) {
+            e.preventDefault();
+            activeNode = e.target;
+            const menu = document.getElementById('contextMenu');
+            menu.style.display = 'block';
+            menu.style.left = e.pageX + 'px';
+            menu.style.top = e.pageY + 'px';
+
+            const jumpToFileItem = document.getElementById('jumpToFile');
+            jumpToFileItem.style.display = activeNode.dataset.notePath ? 'block' : 'none';
+        }
+
+        document.getElementById('jumpToFile').addEventListener('click', () => {
+            if (activeNode && activeNode.dataset.notePath) {
+                window.jumpToFile(activeNode.dataset.notePath);
+            }
+            hideContextMenu();
+        });
+
+        document.getElementById('deleteNode').addEventListener('click', () => {
+            if (activeNode) {
+                instance.remove(activeNode);
+            }
+            hideContextMenu();
+        });
+
+        document.addEventListener('click', hideContextMenu);
+
+        function hideContextMenu() {
+            document.getElementById('contextMenu').style.display = 'none';
+            activeNode = null;
+        }
+
+        function saveCurrentFlowchart() {
+            const nodes = Array.from(document.querySelectorAll('.flowchart-node')).map(node => ({
+                id: node.id,
+                text: node.innerText,
+                position: {
+                    x: parseInt(node.style.left),
+                    y: parseInt(node.style.top)
+                },
+                noteData: node.dataset.notePath ? {
+                    path: node.dataset.notePath,
+                    id: node.dataset.noteId
+                } : null
+            }));
+
+            const connections = instance.getConnections().map(conn => ({
+                sourceId: conn.sourceId,
+                targetId: conn.targetId
+            }));
+
+            return {
+                nodes,
+                connections
+            };
+        }
+
+        function loadFlowchart(data) {
+            const container = document.getElementById('flowchartContainer');
+            container.innerHTML = '';
+            instance.reset();
+
+            data.nodes.forEach(nodeData => {
+                createNode(nodeData.text, nodeData.position, nodeData.noteData);
+            });
+
+            data.connections.forEach(conn => {
+                instance.connect({
+                    source: conn.sourceId,
+                    target: conn.targetId,
+                    connector: ["Bezier"],
+                    paintStyle: { stroke: "#2196F3", strokeWidth: 2 }
+                });
+            });
+        }
+    </script>
+</body>
+</html> 

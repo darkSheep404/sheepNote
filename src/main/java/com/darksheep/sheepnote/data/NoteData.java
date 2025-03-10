@@ -50,4 +50,8 @@ public class NoteData {
     public Date getUpdateTime() {
         return updateTime;
     }
+
+    public Integer getId() {
+        return id;
+    }
 }

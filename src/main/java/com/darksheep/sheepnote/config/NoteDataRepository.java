@@ -1,5 +1,6 @@
 package com.darksheep.sheepnote.config;
 
+import com.darksheep.sheepnote.data.FlowchartData;
 import com.darksheep.sheepnote.data.NoteData;
 
 import java.sql.Connection;
@@ -20,8 +21,23 @@ public class NoteDataRepository {
 
     static {
         connection = getConnection();
+        initFlowchartTable();
     }
 
+    private static void initFlowchartTable() {
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute(
+                "CREATE TABLE IF NOT EXISTS flowcharts (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "name TEXT NOT NULL," +
+                "data TEXT NOT NULL," +
+                "create_time BIGINT NOT NULL" +
+                ")"
+            );
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static int insert(NoteData noteData) {
         int id = 0;
@@ -50,7 +66,6 @@ public class NoteDataRepository {
         }
         return id;
     }
-
 
     /**
      * 从数据库中查询所有笔记数据
@@ -102,5 +117,93 @@ public class NoteDataRepository {
             }
         }
 
+    }
+
+    // 流程图相关方法
+    public static void saveFlowchart(FlowchartData flowchart) {
+        String sql = "INSERT INTO flowcharts (name, data, create_time) VALUES (?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, flowchart.getName());
+            pstmt.setString(2, flowchart.getData());
+            pstmt.setLong(3, flowchart.getCreateTime());
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static List<FlowchartData> getAllFlowcharts() {
+        List<FlowchartData> flowcharts = new ArrayList<>();
+        String sql = "SELECT * FROM flowcharts ORDER BY create_time DESC";
+        
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            while (rs.next()) {
+                FlowchartData flowchart = new FlowchartData();
+                flowchart.setId(rs.getInt("id"));
+                flowchart.setName(rs.getString("name"));
+                flowchart.setData(rs.getString("data"));
+                flowchart.setCreateTime(rs.getLong("create_time"));
+                flowcharts.add(flowchart);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return flowcharts;
+    }
+
+    public static FlowchartData getFlowchartById(int id) {
+        String sql = "SELECT * FROM flowcharts WHERE id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            ResultSet rs = pstmt.executeQuery();
+            FlowchartData flowchart = new FlowchartData();
+            if (rs.next()) {
+                flowchart.setId(rs.getInt("id"));
+                flowchart.setName(rs.getString("name"));
+                flowchart.setData(rs.getString("data"));
+                flowchart.setCreateTime(rs.getLong("create_time"));
+                return flowchart;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // 笔记搜索方法
+    public static List<NoteData> searchNotes(String keyword) {
+        List<NoteData> results = new ArrayList<>();
+        String sql = "SELECT * FROM notes " +
+                    "WHERE title LIKE ? OR select_code LIKE ? " +
+                    "ORDER BY update_time DESC";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            String searchPattern = "%" + keyword + "%";
+            pstmt.setString(1, searchPattern);
+            pstmt.setString(2, searchPattern);
+            
+            ResultSet rs = pstmt.executeQuery();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            while (rs.next()) {
+                NoteData noteData = new NoteData();
+                noteData.id = rs.getInt("id");
+                noteData.noteTitle = rs.getString("title");
+                noteData.noteFilePath = rs.getString("file_path");
+                noteData.noteLineNumber = rs.getInt("line_number");
+                noteData.selectCode = rs.getString("select_code");
+                String createTime = rs.getString("create_time");
+                String updateTime = rs.getString("update_time");
+                noteData.createTime = dateFormat.parse(createTime);
+                noteData.updateTime = dateFormat.parse(updateTime);
+                results.add(noteData);
+            }
+        } catch (SQLException | ParseException e) {
+            e.printStackTrace();
+        }
+        
+        return results;
     }
 }

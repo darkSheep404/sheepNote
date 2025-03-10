@@ -8,9 +8,8 @@ import com.darksheep.sheepnote.ui.swing.editor.utils.EditorHelper;
 import com.darksheep.sheepnote.ui.swing.toolWindow.divider.CustomSplitPaneUI;
 import com.darksheep.sheepnote.ui.web.brower.JBCefBrowserSingleton;
 import com.darksheep.sheepnote.ui.web.container.BrowserPanel;
+import com.darksheep.sheepnote.ui.web.container.NoteFlowchartPanel;
 import com.darksheep.sheepnote.ui.web.container.NotePanelWebVersion;
-import com.darksheep.sheepnote.utils.LocalHtmlHelper;
-import com.google.gson.Gson;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.Editor;
@@ -22,19 +21,13 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import com.intellij.ui.jcef.JBCefBrowser;
 import com.intellij.util.messages.MessageBus;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.cef.browser.CefBrowser;
-import org.cef.browser.CefFrame;
-import org.cef.handler.CefDisplayHandlerAdapter;
 import org.jetbrains.annotations.NotNull;
+
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class NoteListToolWindowFactory implements ToolWindowFactory {
@@ -58,6 +51,8 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+
+
 
         // 初始化排序按钮面板
         JPanel buttonPanel = new JPanel();
@@ -98,16 +93,18 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
         Content mainContent = contentFactory.createContent(mainPanel, "NoteList", false);
         //第三个 浏览器
         Content browserContent = contentFactory.createContent(new BrowserPanel(), "Browser", false);
-
-
         Content notePanelWebVersion = contentFactory.createContent(new NotePanelWebVersion(), "NoteList V2", false);
+
+        // 添加流程图面板作为新的标签页
+        NoteFlowchartPanel flowchartPanel = new NoteFlowchartPanel(project);
+        Content flowchartContent = contentFactory.createContent(flowchartPanel, "流程图", false);
 
         browserContent.setIcon(AllIcons.Actions.IntentionBulb);
         toolWindow.getContentManager().addContent(mainContent);
-        // toolWindow.getContentManager().addContent(flowchartContent);
         toolWindow.getContentManager().addContent(browserContent);
         toolWindow.getContentManager().setSelectedContent(mainContent);
         toolWindow.getContentManager().addContent(notePanelWebVersion);
+        toolWindow.getContentManager().addContent(flowchartContent);
     }
 
 
