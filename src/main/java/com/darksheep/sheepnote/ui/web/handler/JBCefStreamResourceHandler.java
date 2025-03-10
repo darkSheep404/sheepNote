@@ -54,23 +54,22 @@ public class JBCefStreamResourceHandler extends CefResourceHandlerAdapter {
 
     @Override
     public boolean readResponse(byte[] data_out, int bytes_to_read, IntRef bytes_read, CefCallback callback) {
-        if (isFirstRequest) {
-            try {
-                int read = myInputStream.read(data_out, 0, bytes_to_read);
-                if (read <= 0) {
-                    bytes_read.set(0);
-                    return false;
-                } else {
-                    bytes_read.set(read);
-                    isFirstRequest = false;
-                    return true;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+        try {
+            int read = myInputStream.read(data_out, 0, bytes_to_read);
+            if (read <= 0) {
                 bytes_read.set(0);
+                try {
+                    myInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 return false;
+            } else {
+                bytes_read.set(read);
+                return true;
             }
-        } else {
+        } catch (IOException e) {
+            e.printStackTrace();
             bytes_read.set(0);
             return false;
         }

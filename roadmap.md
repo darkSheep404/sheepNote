@@ -101,3 +101,98 @@ https://simpleicons.org/?q=idea
 >[embedded-browser-jcef#Loading Resources From Plugin Distribution](https://plugins.jetbrains.com/docs/intellij/embedded-browser-jcef.html#loading-resources-from-plugin-distribution)
 >
 >[LigaAI 在 IDE 插件开发中接入 JCEF 框架](https://zhuanlan.zhihu.com/p/668561545)
+
+### 基于jsplumb新增Flowchart页面
+
+>  2025年3月10日18:42:08
+
+加载`jsplumb.min.js`遇到报错
+
+`Uncaught SyntaxError: Unexpected end of input`
+
+查看得加载的js只有部分内容,且文件为`23.0KB`,远小于文件真实大小`210KB`
+
+
+
+```md
+主要问题在于 JBCefStreamResourceHandler 类中的 readResponse 方法实现有问题：
+isFirstRequest 标志位的使用导致只读取了第一次的数据块，之后就不再读取了
+没有正确实现分块传输的逻辑，大文件需要多次读取才能完整传输
+```
+
+```java
+ @Override
+    public boolean readResponse(byte[] data_out, int bytes_to_read, IntRef bytes_read, CefCallback callback) {
+        if (isFirstRequest) {
+            try {
+                int read = myInputStream.read(data_out, 0, bytes_to_read);
+                if (read <= 0) {
+                    bytes_read.set(0);
+                    return false;
+                } else {
+                    bytes_read.set(read);
+                    isFirstRequest = false;
+                    return true;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                bytes_read.set(0);
+                return false;
+            }
+        } else {
+            bytes_read.set(0);
+            return false;
+        }
+    }
+```
+
+更改后
+
+```java
+@Override
+    public boolean readResponse(byte[] data_out, int bytes_to_read, IntRef bytes_read, CefCallback callback) {
+        try {
+            int read = myInputStream.read(data_out, 0, bytes_to_read);
+            if (read <= 0) {
+                bytes_read.set(0);
+                try {
+                    myInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return false;
+            } else {
+                bytes_read.set(read);
+                return true;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            bytes_read.set(0);
+            return false;
+        }
+    }
+```
+
+>
+>
+>主要修改说明：
+>
+>1. 移除了 isFirstRequest 标志位的判断，因为我们需要持续读取数据直到文件结束
+>
+>1. 每次调用都尝试读取请求的字节数（bytes_to_read）
+>
+>1. 当读取到数据时（read > 0），设置实际读取的字节数并返回 true，表示还有更多数据需要读取
+>
+>1. 当没有更多数据时（read <= 0），关闭输入流并返回 false，表示传输结束
+>
+>1. 添加了输入流的关闭操作，确保资源被正确释放
+>
+>这样修改后，大文件应该可以完整传输了。修复后的处理流程是：
+>
+>1. 浏览器发起请求
+>
+>1. readResponse 方法会被多次调用，每次读取一块数据
+>
+>1. 持续读取直到整个文件被完整传输
+>
+>1. 文件读取完成后自动关闭流
