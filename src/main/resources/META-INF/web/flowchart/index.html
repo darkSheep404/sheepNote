@@ -8,10 +8,20 @@
 </head>
 <body>
     <div class="toolbar">
-        <button id="newNode">新建节点</button>
-        <button id="save">保存流程图</button>
-        <button id="refresh" style="margin-left: auto;">
-            <span style="margin-right: 5px;">⟳</span>刷新页面
+        <button id="newNode" class="toolbar-btn">
+            <span class="icon">+</span>新建节点
+        </button>
+        <button id="loadFlowchart" class="toolbar-btn">
+            <span class="icon">📂</span>加载流程图
+        </button>
+        <button id="save" class="toolbar-btn">
+            <span class="icon">💾</span>保存流程图
+        </button>
+        <button id="toggleAllCode" class="toolbar-btn">
+            <span class="icon">📝</span><span id="toggleAllCodeText">展开所有代码</span>
+        </button>
+        <button id="refresh" class="toolbar-btn" style="margin-left: auto;">
+            <span class="icon">⟳</span>刷新页面
         </button>
     </div>
     
@@ -35,12 +45,143 @@
         </div>
     </div>
 
+    <div id="loadDialog" class="modal">
+        <div class="modal-content">
+            <h3>加载流程图</h3>
+            <div id="flowchartList" class="flowchart-list"></div>
+            <div class="modal-buttons">
+                <button id="cancelLoad">取消</button>
+            </div>
+        </div>
+    </div>
+
     <div id="contextMenu" class="context-menu">
+        <div class="menu-item" id="addNextNode">添加下一个节点</div>
         <div class="menu-item" id="jumpToFile">跳转到文件</div>
+        <div class="menu-item" id="toggleCode">展开/折叠代码</div>
         <div class="menu-item" id="deleteNode">删除节点</div>
     </div>
 
     <div id="flowchartContainer"></div>
+
+    <style>
+        .toolbar-btn {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            margin: 0 4px;
+            border: none;
+            border-radius: 4px;
+            background: #f0f0f0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toolbar-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .toolbar-btn .icon {
+            margin-right: 8px;
+        }
+
+        .flowchart-node {
+            padding: 10px;
+            border-radius: 6px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 300px;
+            transition: all 0.3s;
+        }
+
+        .flowchart-node .node-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .flowchart-node .node-title {
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .flowchart-node .node-filename {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .flowchart-node .node-content {
+            display: none;
+            margin-top: 8px;
+            padding: 8px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+
+        .flowchart-node.expanded .node-content {
+            display: block;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background: white;
+            margin: 10% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .flowchart-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+
+        .flowchart-list-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f5f5f5;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .flowchart-list-item:hover {
+            background: #e0e0e0;
+        }
+
+        .flowchart-node .node-tags {
+            margin-top: 4px;
+            font-size: 0.8em;
+            color: #666;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .flowchart-node .node-tag {
+            background: #e0e0e0;
+            padding: 2px 6px;
+            border-radius: 12px;
+            color: #444;
+        }
+    </style>
 
     <script>
         // 添加刷新按钮的事件监听（放在最前面）
@@ -73,15 +214,31 @@
             document.getElementById('saveDialog').style.display = 'block';
         });
 
-        document.getElementById('confirmSave').addEventListener('click', () => {
+        document.getElementById('confirmSave').addEventListener('click', async () => {
             const name = document.getElementById('flowchartName').value;
             if (name) {
-                const flowchartData = {
-                    name: name,
-                    content: saveCurrentFlowchart()
-                };
-                window.saveFlowchart(flowchartData);
-                document.getElementById('saveDialog').style.display = 'none';
+                try {
+                    const flowchartContent = saveCurrentFlowchart();
+                    // 为所有带 noteData 的节点添加流程图名称作为 tag
+                    flowchartContent.nodes.forEach(node => {
+                        if (node.noteData) {
+                            const tags = node.noteData.tags || [];
+                            if (!tags.includes(name)) {
+                                tags.push(name);
+                                node.noteData.tags = tags;
+                            }
+                        }
+                    });
+
+                    const flowchartData = {
+                        name: name,
+                        content: flowchartContent
+                    };
+                    await window.saveFlowchart(flowchartData);
+                    document.getElementById('saveDialog').style.display = 'none';
+                } catch (error) {
+                    console.error('保存失败:', error);
+                }
             }
         });
 
@@ -89,7 +246,321 @@
             document.getElementById('saveDialog').style.display = 'none';
         });
 
-        async function showSearchPanel() {
+        let isAllCodeExpanded = false;
+        const MAX_CONNECTIONS = 5;
+
+        document.getElementById('toggleAllCode').addEventListener('click', () => {
+            isAllCodeExpanded = !isAllCodeExpanded;
+            const nodes = document.querySelectorAll('.flowchart-node');
+            nodes.forEach(node => {
+                if (isAllCodeExpanded) {
+                    node.classList.add('expanded');
+                } else {
+                    node.classList.remove('expanded');
+                }
+            });
+            document.getElementById('toggleAllCodeText').textContent = 
+                isAllCodeExpanded ? '折叠所有代码' : '展开所有代码';
+        });
+
+        document.getElementById('loadFlowchart').addEventListener('click', async () => {
+            try {
+                const flowcharts = await window.getFlowcharts();
+                displayFlowchartList(flowcharts);
+                document.getElementById('loadDialog').style.display = 'block';
+            } catch (error) {
+                console.error('加载流程图列表失败:', error);
+            }
+        });
+
+        document.getElementById('cancelLoad').addEventListener('click', () => {
+            document.getElementById('loadDialog').style.display = 'none';
+        });
+
+        function displayFlowchartList(flowcharts) {
+            const listContainer = document.getElementById('flowchartList');
+            listContainer.innerHTML = '';
+            
+            flowcharts.forEach(flowchart => {
+                const item = document.createElement('div');
+                item.className = 'flowchart-list-item';
+                item.textContent = flowchart.name;
+                item.addEventListener('click', async () => {
+                    try {
+                        console.log('await loadFlowchart:', flowchart.id);
+                        await loadFlowchart(flowchart.id);
+                        document.getElementById('loadDialog').style.display = 'none';
+                    } catch (error) {
+                        console.error('加载流程图失败:', error);
+                    }
+                });
+                listContainer.appendChild(item);
+            });
+        }
+
+        function saveCurrentFlowchart() {
+            const nodes = Array.from(document.querySelectorAll('.flowchart-node')).map(node => {
+                const nodeData = {
+                    id: node.id,
+                    text: node.querySelector('.node-title').textContent,
+                    position: {
+                        x: parseInt(node.style.left),
+                        y: parseInt(node.style.top)
+                    }
+                };
+
+                if (node.dataset.notePath) {
+                    nodeData.noteData = {
+                        noteFilePath: node.dataset.notePath,
+                        id: node.dataset.noteId,
+                        tags: node.dataset.tags || ''
+                    };
+                }
+
+                return nodeData;
+            });
+
+            const connections = instance.getConnections().map(conn => ({
+                sourceId: conn.sourceId,
+                targetId: conn.targetId
+            }));
+
+            return {
+                nodes,
+                connections
+            };
+        }
+
+        async function loadFlowchart(flowchartId) {
+            try {
+                console.log('loadFlowchart(flowchartId):', flowchartId);
+                const flowchartData = await window.getFlowchartById(flowchartId);
+                if (!flowchartData) {
+                    console.error('未找到流程图数据');
+                    return;
+                }
+
+                const data = flowchartData;
+                if (!data || !data.nodes || !Array.isArray(data.nodes)) {
+                    console.error('流程图数据格式不正确');
+                    return;
+                }
+                
+                // 清空现有的流程图
+                instance.reset();
+                const container = document.getElementById('flowchartContainer');
+                container.innerHTML = '';
+                nodeCounter = 0;
+
+                // 创建节点
+                data.nodes.forEach(nodeData => {
+                    // 确保 noteData 的字段名称正确
+                    let noteDataForCreate = null;
+                    if (nodeData.noteData) {
+                        noteDataForCreate = {
+                            noteFilePath: nodeData.noteData.noteFilePath || nodeData.noteData.path,
+                            id: nodeData.noteData.id,
+                            selectCode: nodeData.noteData.selectCode,
+                            tags: nodeData.noteData.tags
+                        };
+                    }
+
+                    const node = createNode(nodeData.text, nodeData.position, noteDataForCreate);
+                    node.id = nodeData.id;
+                });
+
+                // 创建连接
+                if (data.connections && Array.isArray(data.connections)) {
+                    data.connections.forEach(conn => {
+                        if (conn.sourceId && conn.targetId) {
+                            instance.connect({
+                                source: conn.sourceId,
+                                target: conn.targetId,
+                                connector: ["Bezier"],
+                                paintStyle: { stroke: "#2196F3", strokeWidth: 2 }
+                            });
+                        }
+                    });
+                }
+
+                // 更新节点计数器
+                const nodeIds = data.nodes.map(n => parseInt(n.id.replace('node-', '')));
+                nodeCounter = Math.max(...nodeIds, 0);
+            } catch (error) {
+                console.error('加载流程图失败:', error);
+            }
+        }
+
+        function displaySearchResults(results, position = null, sourceNode = null) {
+            const searchResults = document.getElementById('searchResults');
+            searchResults.innerHTML = '';
+            
+            if (!Array.isArray(results)) {
+                console.error('搜索结果格式不正确');
+                return;
+            }
+            
+            results.forEach(result => {
+                if (!result) return;
+
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                item.textContent = result.noteTitle || '未命名笔记';
+                item.addEventListener('click', () => {
+                    const pos = position || currentMousePos;
+                    const newNode = createNode(result.noteTitle || '未命名笔记', pos, {
+                        noteFilePath: result.noteFilePath,
+                        id: result.id,
+                        selectCode: result.selectCode,
+                        tags: result.tags
+                    });
+                    
+                    if (sourceNode) {
+                        instance.connect({
+                            source: sourceNode.id,
+                            target: newNode.id,
+                            connector: ["Bezier"],
+                            paintStyle: { stroke: "#2196F3", strokeWidth: 2 }
+                        });
+                    }
+                    
+                    hideSearchPanel();
+                });
+                searchResults.appendChild(item);
+            });
+        }
+
+        function createNode(text, position, noteData = null) {
+            const nodeId = `node-${++nodeCounter}`;
+            const node = document.createElement('div');
+            node.id = nodeId;
+            node.className = 'flowchart-node';
+            
+            // 创建节点内容结构
+            const header = document.createElement('div');
+            header.className = 'node-header';
+            
+            const title = document.createElement('h3');
+            title.className = 'node-title';
+            title.textContent = text || '未命名节点';
+            
+            header.appendChild(title);
+            node.appendChild(header);
+
+            if (noteData) {
+                if (noteData.noteFilePath) {
+                    const filename = document.createElement('div');
+                    filename.className = 'node-filename';
+                    filename.textContent = noteData.noteFilePath.split(/[/\\]/).pop();
+                    node.appendChild(filename);
+                }
+
+                if (noteData.selectCode) {
+                    const content = document.createElement('div');
+                    content.className = 'node-content';
+                    content.textContent = noteData.selectCode;
+                    node.appendChild(content);
+                }
+
+                if (noteData.tags) {
+                    try {
+                        const tags = document.createElement('div');
+                        tags.className = 'node-tags';
+                        const tagArray = noteData.tags.split(',')
+                            .map(tag => tag.trim())
+                            .filter(tag => tag.length > 0);
+                        if (tagArray.length > 0) {
+                            tags.innerHTML = tagArray.map(tag => 
+                                `<span class="node-tag">${tag}</span>`
+                            ).join('');
+                            node.appendChild(tags);
+                            node.dataset.tags = noteData.tags;
+                        }
+                    } catch (e) {
+                        console.error('处理标签时出错:', e);
+                    }
+                }
+
+                if (noteData.noteFilePath) node.dataset.notePath = noteData.noteFilePath;
+                if (noteData.id) node.dataset.noteId = noteData.id;
+            }
+
+            node.style.left = `${position?.x || 0}px`;
+            node.style.top = `${position?.y || 0}px`;
+
+            document.getElementById('flowchartContainer').appendChild(node);
+            
+            // 点击节点展开/折叠代码
+            node.addEventListener('click', (e) => {
+                if (e.target === node || e.target.parentNode === node) {
+                    node.classList.toggle('expanded');
+                }
+            });
+
+            instance.draggable(nodeId);
+
+            instance.addEndpoint(nodeId, {
+                anchor: "Right",
+                isSource: true,
+                maxConnections: MAX_CONNECTIONS,
+                connectorStyle: { stroke: "#2196F3", strokeWidth: 2 },
+                connectionType: "basic"
+            });
+
+            instance.addEndpoint(nodeId, {
+                anchor: "Left",
+                isTarget: true,
+                maxConnections: MAX_CONNECTIONS,
+                connectorStyle: { stroke: "#2196F3", strokeWidth: 2 },
+                connectionType: "basic"
+            });
+
+            node.addEventListener('contextmenu', showContextMenu);
+            return node;
+        }
+
+        function showContextMenu(e) {
+            e.preventDefault();
+            activeNode = e.target.closest('.flowchart-node');
+            if (!activeNode) return;
+
+            const menu = document.getElementById('contextMenu');
+            menu.style.display = 'block';
+            menu.style.left = e.pageX + 'px';
+            menu.style.top = e.pageY + 'px';
+
+            const jumpToFileItem = document.getElementById('jumpToFile');
+            const toggleCodeItem = document.getElementById('toggleCode');
+            
+            jumpToFileItem.style.display = activeNode.dataset.notePath ? 'block' : 'none';
+            toggleCodeItem.style.display = activeNode.querySelector('.node-content') ? 'block' : 'none';
+            
+            // 检查连接数量
+            const connections = instance.getConnections({ source: activeNode.id });
+            document.getElementById('addNextNode').style.display = 
+                connections.length >= MAX_CONNECTIONS ? 'none' : 'block';
+        }
+
+        document.getElementById('addNextNode').addEventListener('click', () => {
+            if (activeNode) {
+                const rect = activeNode.getBoundingClientRect();
+                const newPosition = {
+                    x: rect.right + 100,
+                    y: rect.top
+                };
+                showSearchPanel(newPosition, activeNode);
+            }
+            hideContextMenu();
+        });
+
+        document.getElementById('toggleCode').addEventListener('click', () => {
+            if (activeNode) {
+                activeNode.classList.toggle('expanded');
+            }
+            hideContextMenu();
+        });
+
+        async function showSearchPanel(position = null, sourceNode = null) {
             const searchPanel = document.getElementById('searchPanel');
             searchPanel.style.display = 'block';
             
@@ -98,37 +569,26 @@
             searchInput.value = '';
             searchInput.focus();
             
-            searchInput.addEventListener('input', async (e) => {
+            const newSearchInput = searchInput.cloneNode(true);
+            searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+            
+            newSearchInput.addEventListener('input', async (e) => {
                 const query = e.target.value;
                 if (query.length > 0) {
                     try {
                         const results = await window.searchNotes(query);
-                        displaySearchResults(results);
+                        if (Array.isArray(results)) {
+                            displaySearchResults(results, position, sourceNode);
+                        } else {
+                            console.error('搜索结果格式不正确:', results);
+                        }
                     } catch (error) {
                         console.error('搜索失败:', error);
+                        searchResults.innerHTML = '<div class="search-error">搜索失败，请重试</div>';
                     }
                 } else {
                     searchResults.innerHTML = '';
                 }
-            });
-        }
-
-        function displaySearchResults(results) {
-            const searchResults = document.getElementById('searchResults');
-            searchResults.innerHTML = '';
-            
-            results.forEach(result => {
-                const item = document.createElement('div');
-                item.className = 'search-result-item';
-                item.textContent = result.title;
-                item.addEventListener('click', () => {
-                    createNode(result.title, currentMousePos, {
-                        path: result.path,
-                        id: result.id
-                    });
-                    hideSearchPanel();
-                });
-                searchResults.appendChild(item);
             });
         }
 
@@ -148,62 +608,6 @@
             document.getElementById('searchResults').innerHTML = '';
         }
 
-        function createNode(text, position, noteData = null) {
-            const nodeId = `node-${++nodeCounter}`;
-            const node = document.createElement('div');
-            node.id = nodeId;
-            node.className = 'flowchart-node';
-            node.innerHTML = text;
-            node.style.left = `${position.x}px`;
-            node.style.top = `${position.y}px`;
-            
-            if (noteData) {
-                node.dataset.notePath = noteData.path;
-                node.dataset.noteId = noteData.id;
-            }
-
-            document.getElementById('flowchartContainer').appendChild(node);
-
-            instance.draggable(nodeId);
-
-            instance.addEndpoint(nodeId, {
-                anchor: "Right",
-                isSource: true,
-                connectorStyle: { stroke: "#2196F3", strokeWidth: 2 },
-                connectionType: "basic"
-            });
-
-            instance.addEndpoint(nodeId, {
-                anchor: "Left",
-                isTarget: true,
-                connectorStyle: { stroke: "#2196F3", strokeWidth: 2 },
-                connectionType: "basic"
-            });
-
-            node.addEventListener('contextmenu', showContextMenu);
-
-            return node;
-        }
-
-        function showContextMenu(e) {
-            e.preventDefault();
-            activeNode = e.target;
-            const menu = document.getElementById('contextMenu');
-            menu.style.display = 'block';
-            menu.style.left = e.pageX + 'px';
-            menu.style.top = e.pageY + 'px';
-
-            const jumpToFileItem = document.getElementById('jumpToFile');
-            jumpToFileItem.style.display = activeNode.dataset.notePath ? 'block' : 'none';
-        }
-
-        document.getElementById('jumpToFile').addEventListener('click', () => {
-            if (activeNode && activeNode.dataset.notePath) {
-                window.jumpToFile(activeNode.dataset.notePath);
-            }
-            hideContextMenu();
-        });
-
         document.getElementById('deleteNode').addEventListener('click', () => {
             if (activeNode) {
                 instance.remove(activeNode);
@@ -216,50 +620,6 @@
         function hideContextMenu() {
             document.getElementById('contextMenu').style.display = 'none';
             activeNode = null;
-        }
-
-        function saveCurrentFlowchart() {
-            const nodes = Array.from(document.querySelectorAll('.flowchart-node')).map(node => ({
-                id: node.id,
-                text: node.innerText,
-                position: {
-                    x: parseInt(node.style.left),
-                    y: parseInt(node.style.top)
-                },
-                noteData: node.dataset.notePath ? {
-                    path: node.dataset.notePath,
-                    id: node.dataset.noteId
-                } : null
-            }));
-
-            const connections = instance.getConnections().map(conn => ({
-                sourceId: conn.sourceId,
-                targetId: conn.targetId
-            }));
-
-            return {
-                nodes,
-                connections
-            };
-        }
-
-        function loadFlowchart(data) {
-            const container = document.getElementById('flowchartContainer');
-            container.innerHTML = '';
-            instance.reset();
-
-            data.nodes.forEach(nodeData => {
-                createNode(nodeData.text, nodeData.position, nodeData.noteData);
-            });
-
-            data.connections.forEach(conn => {
-                instance.connect({
-                    source: conn.sourceId,
-                    target: conn.targetId,
-                    connector: ["Bezier"],
-                    paintStyle: { stroke: "#2196F3", strokeWidth: 2 }
-                });
-            });
         }
     </script>
 </body>

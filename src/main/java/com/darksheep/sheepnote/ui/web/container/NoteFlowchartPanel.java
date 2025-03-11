@@ -1,9 +1,9 @@
 package com.darksheep.sheepnote.ui.web.container;
 
+import com.darksheep.sheepnote.data.NoteData;
 import com.darksheep.sheepnote.data.service.FlowchartService;
-import com.darksheep.sheepnote.ui.web.handler.JBCefLocalRequestHandler;
-import com.darksheep.sheepnote.ui.web.handler.JBCefStreamResourceHandler;
 import com.darksheep.sheepnote.ui.web.handler.WebResourceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -18,17 +18,8 @@ import org.cef.handler.CefDisplayHandlerAdapter;
 import com.google.gson.Gson;
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 public class NoteFlowchartPanel extends JPanel {
     private final JBCefBrowser browser;
@@ -66,17 +57,44 @@ public class NoteFlowchartPanel extends JPanel {
                 flowchartService.saveFlowchart(name, content);
                 return new JBCefJSQuery.Response("OK");
             } catch (Exception e) {
+                e.printStackTrace();
                 return new JBCefJSQuery.Response("ERROR", 500, e.getMessage());
             }
         });
+
+        // 获取流程图列表的处理器
+        JBCefJSQuery getFlowchartsQuery = JBCefJSQuery.create((JBCefBrowserBase)browser);
+        getFlowchartsQuery.addHandler((String data) -> {
+            try {
+                List<Map<String, String>> flowcharts = flowchartService.getFlowcharts();
+                return new JBCefJSQuery.Response(gson.toJson(flowcharts));
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new JBCefJSQuery.Response("ERROR", 500, e.getMessage());
+            }
+        });
+        //获取流程图列表 item
+        JBCefJSQuery getFlowchartItemQuery = JBCefJSQuery.create((JBCefBrowserBase)browser);
+        getFlowchartItemQuery.addHandler((String flowchartId) -> {
+            try {
+                String flowchart = flowchartService.getFlowchartById(flowchartId);
+                System.out.println(flowchart);
+                return new JBCefJSQuery.Response(flowchart);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new JBCefJSQuery.Response("ERROR", 500, e.getMessage());
+            }
+        });
+
 
         // 搜索笔记的处理器
         JBCefJSQuery searchNotesQuery = JBCefJSQuery.create((JBCefBrowserBase)browser);
         searchNotesQuery.addHandler((String keyword) -> {
             try {
-                List<Map<String, String>> results = flowchartService.searchNotes(keyword);
+                List<NoteData> results = flowchartService.searchNotes(keyword);
                 return new JBCefJSQuery.Response(gson.toJson(results));
             } catch (Exception e) {
+                e.printStackTrace();
                 return new JBCefJSQuery.Response("ERROR", 500, e.getMessage());
             }
         });
@@ -85,7 +103,7 @@ public class NoteFlowchartPanel extends JPanel {
         JBCefJSQuery jumpToFileQuery = JBCefJSQuery.create((JBCefBrowserBase)browser);
         jumpToFileQuery.addHandler((String filePath) -> {
             try {
-                SwingUtilities.invokeLater(() -> {
+                ApplicationManager.getApplication().invokeLater(()->{
                     VirtualFile file = LocalFileSystem.getInstance().findFileByPath(filePath);
                     if (file != null && file.exists()) {
                         FileEditorManager.getInstance(project).openFile(file, true);
@@ -93,48 +111,80 @@ public class NoteFlowchartPanel extends JPanel {
                 });
                 return new JBCefJSQuery.Response("OK");
             } catch (Exception e) {
+                e.printStackTrace();
                 return new JBCefJSQuery.Response("ERROR", 500, e.getMessage());
             }
         });
+
+
         client.addDisplayHandler(new CefDisplayHandlerAdapter() {
             @Override
             public void onAddressChange(CefBrowser browser, CefFrame frame, String url) {
                 super.onAddressChange(browser, frame, url);
                 // 注入所有JavaScript桥接函数
-                injectJSBridge(saveFlowchartQuery, searchNotesQuery, jumpToFileQuery);
+                injectJSBridge(saveFlowchartQuery, searchNotesQuery, jumpToFileQuery, getFlowchartsQuery,getFlowchartItemQuery);
             }
         }, browser.getCefBrowser());
         // 注册浏览器加载完成事件
     }
 
-    private void injectJSBridge(JBCefJSQuery saveFlowchartQuery, JBCefJSQuery searchNotesQuery, JBCefJSQuery jumpToFileQuery) {
+    private void injectJSBridge(JBCefJSQuery saveFlowchartQuery, JBCefJSQuery searchNotesQuery,
+                                JBCefJSQuery jumpToFileQuery, JBCefJSQuery getFlowchartsQuery, JBCefJSQuery getFlowchartItemQuery) {
         StringBuilder script = new StringBuilder();
         
         // 保存流程图函数
         script.append("window.saveFlowchart = function(data) {" +
-            saveFlowchartQuery.inject(
-                "JSON.stringify(data)",
-                "function(response) { return response; }",
-                "function(error_code, error_message) { throw new Error(error_code + ': ' + error_message); }"
-            ) +
+            "return new Promise((resolve, reject) => {" +
+                saveFlowchartQuery.inject(
+                    "JSON.stringify(data)",
+                    "function(response) { resolve(response); }",
+                    "function(error_code, error_message) { reject(new Error(error_code + ': ' + error_message)); }"
+                ) +
+            "});" +
         "};");
+
+        // 获取流程图列表函数
+        script.append("window.getFlowcharts = function() {" +
+            "return new Promise((resolve, reject) => {" +
+                getFlowchartsQuery.inject(
+                    "''",
+                    "function(response) { console.log('window.getFlowcharts Success:',JSON.parse(response)); resolve(JSON.parse(response)); }",
+                    "function(error_code, error_message) { reject(new Error(error_code + ': ' + error_message)); }"
+                ) +
+            "});" +
+        "};");
+
+        // 获取流程图列表函数
+        script.append("window.getFlowchartById = function(flowchartId) {" +
+                "return new Promise((resolve, reject) => {" +
+                getFlowchartItemQuery.inject(
+                        "flowchartId",
+                        "function(response) { console.log('window.getFlowchartById Success:',JSON.parse(response)); resolve(JSON.parse(response)); }",
+                        "function(error_code, error_message) { reject(new Error(error_code + ': ' + error_message)); }"
+                ) +
+                "});" +
+                "};");
 
         // 搜索笔记函数
         script.append("window.searchNotes = function(keyword) {" +
-            searchNotesQuery.inject(
-                "keyword",
-                "function(response) { return JSON.parse(response); }",
-                "function(error_code, error_message) { throw new Error(error_code + ': ' + error_message); }"
-            ) +
+            "return new Promise((resolve, reject) => {" +
+                searchNotesQuery.inject(
+                    "keyword",
+                    "function(response) { console.log('window.searchNotes Success:', response); resolve(JSON.parse(response)); }",
+                    "function(error_code, error_message) { reject(new Error(error_code + ': ' + error_message)); }"
+                ) +
+            "});" +
         "};");
 
         // 跳转到文件函数
         script.append("window.jumpToFile = function(path) {" +
-            jumpToFileQuery.inject(
-                "path",
-                "function(response) { return response; }",
-                "function(error_code, error_message) { throw new Error(error_code + ': ' + error_message); }"
-            ) +
+            "return new Promise((resolve, reject) => {" +
+                jumpToFileQuery.inject(
+                    "path",
+                    "function(response) { resolve(response); }",
+                    "function(error_code, error_message) { reject(new Error(error_code + ': ' + error_message)); }"
+                ) +
+            "});" +
         "};");
 
         browser.getCefBrowser().executeJavaScript(script.toString(), "", 0);
@@ -143,7 +193,8 @@ public class NoteFlowchartPanel extends JPanel {
     public void loadSavedFlowchart(String flowchartId) {
         String flowchartData = flowchartService.getFlowchartById(flowchartId);
         if (flowchartData != null) {
-            String script = String.format("loadFlowchart(%s);", flowchartData);
+            System.out.println(flowchartData);
+            String script = String.format("loadFlowchart(%s);", gson.toJson(flowchartData) );
             browser.getCefBrowser().executeJavaScript(script, "", 0);
         }
     }

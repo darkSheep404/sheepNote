@@ -9,6 +9,7 @@ public class NoteData {
     public String noteFilePath;
     public int noteLineNumber;
     public String selectCode;
+    public String tags;
 
     public Date createTime;
 
@@ -53,5 +54,29 @@ public class NoteData {
 
     public Integer getId() {
         return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
+
+    public void addTag(String tag) {
+        if (tag == null || tag.trim().isEmpty()) {
+            return;
+        }
+        
+        if (this.tags == null || this.tags.trim().isEmpty()) {
+            this.tags = tag;
+        } else if (!this.tags.contains(tag)) {
+            this.tags = this.tags + "," + tag;
+        }
     }
 }

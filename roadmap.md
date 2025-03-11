@@ -196,3 +196,18 @@ isFirstRequest 标志位的使用导致只读取了第一次的数据块，之�
 >1. 持续读取直到整个文件被完整传输
 >
 >1. 文件读取完成后自动关闭流
+
+**fix js调用java返回`undefined`**
+
+>  2025年3月10日19:25:05
+
+不使用Promise时,可以打印出返回值结果,但是js获得的返回值为`undefined`
+
+改用Promise后正常
+
+```js
+window.searchNotes Success: [{"path":"D:/coderepo/com.demo/demo2023/redis-demo/src/main/java/com/darksheep/po/ProdTestPo.java","id":"14","title":"测试语法高亮"},{"path":"D:/coderepo/com.demo/demo2023/redis-demo/src/main/java/com/darksheep/RedisDemoApplication.java","id":"8","title":"测试"}]
+```
+
+
+

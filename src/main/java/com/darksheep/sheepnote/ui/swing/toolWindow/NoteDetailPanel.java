@@ -187,8 +187,14 @@ public class NoteDetailPanel extends JPanel{
 
         titleLabel.setText(noteData.noteTitle);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        creationTimeLabel.setText("Create time: " + dateFormat.format(noteData.createTime));
-        updateTimeLabel.setText("Update time: " + dateFormat.format(noteData.updateTime));
+        try{
+            creationTimeLabel.setText("Create time: " + dateFormat.format(noteData.createTime));
+            updateTimeLabel.setText("Update time: " + dateFormat.format(noteData.updateTime));
+        }
+        catch (Exception e){
+            System.out.println("parse date error");
+            e.printStackTrace();
+        }
 
         filePathLabel.setHyperlinkText(noteData.noteFilePath + "#" + noteData.noteLineNumber);
         //注释此处 也会 在打开新的窗口后 不更新右侧ui

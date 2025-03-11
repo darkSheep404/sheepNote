@@ -73,10 +73,10 @@ public class NoteDataRepository {
      * @return 所有笔记数据对象的列表
      * @throws SQLException 查询失败抛出异常
      */
-    public static List<NoteData> getAllNoteData()  {
+    public static List<NoteData> getAllNoteData() {
         List<NoteData> noteDataList = new ArrayList<>();
-        try{
-            String sql = "SELECT * FROM notes";
+        try {
+            String sql = "SELECT id, title, file_path, line_number, select_code, tags, create_time, update_time FROM notes";
             PreparedStatement statement = connection.prepareStatement(sql);
             ResultSet resultSet = statement.executeQuery();
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -87,9 +87,10 @@ public class NoteDataRepository {
                 noteData.noteFilePath = resultSet.getString("file_path");
                 noteData.noteLineNumber = resultSet.getInt("line_number");
                 noteData.selectCode = resultSet.getString("select_code");
+                noteData.tags = resultSet.getString("tags");
                 String createTime = resultSet.getString("create_time");
                 String updateTime = resultSet.getString("update_time");
-                noteData.createTime =dateFormat.parse(createTime);
+                noteData.createTime = dateFormat.parse(createTime);
                 noteData.updateTime = dateFormat.parse(updateTime);
                 noteDataList.add(noteData);
             }
@@ -100,7 +101,6 @@ public class NoteDataRepository {
             e.printStackTrace();
             return noteDataList;
         }
-
     }
 
     public static void deleteNoteData(NoteData noteData){
@@ -176,7 +176,8 @@ public class NoteDataRepository {
     // 笔记搜索方法
     public static List<NoteData> searchNotes(String keyword) {
         List<NoteData> results = new ArrayList<>();
-        String sql = "SELECT * FROM notes " +
+        String sql = "SELECT id, title, file_path, line_number, select_code, tags, create_time, update_time " +
+                    "FROM notes " +
                     "WHERE title LIKE ? OR select_code LIKE ? " +
                     "ORDER BY update_time DESC";
         
@@ -194,6 +195,7 @@ public class NoteDataRepository {
                 noteData.noteFilePath = rs.getString("file_path");
                 noteData.noteLineNumber = rs.getInt("line_number");
                 noteData.selectCode = rs.getString("select_code");
+                noteData.tags = rs.getString("tags");
                 String createTime = rs.getString("create_time");
                 String updateTime = rs.getString("update_time");
                 noteData.createTime = dateFormat.parse(createTime);
@@ -205,5 +207,57 @@ public class NoteDataRepository {
         }
         
         return results;
+    }
+
+    /**
+     * 根据ID获取笔记
+     * @param id 笔记ID
+     * @return 笔记数据，如果不存在返回null
+     */
+    public static NoteData getNoteById(Integer id) {
+        String sql = "SELECT id, title, file_path, line_number, select_code, tags, create_time, update_time " +
+                    "FROM notes WHERE id = ?";
+        
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, id);
+            ResultSet rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                NoteData note = new NoteData();
+                note.id = rs.getInt("id");
+                note.noteTitle = rs.getString("title");
+                note.noteFilePath = rs.getString("file_path");
+                note.noteLineNumber = rs.getInt("line_number");
+                note.selectCode = rs.getString("select_code");
+                note.tags = rs.getString("tags");
+                note.createTime = rs.getTimestamp("create_time");
+                note.updateTime = rs.getTimestamp("update_time");
+                return note;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 更新笔记的标签
+     * @param note 包含更新后标签的笔记数据
+     */
+    public static void updateNoteTags(NoteData note) {
+        String sql = "UPDATE notes SET tags = ?, update_time = CURRENT_TIMESTAMP WHERE id = ?";
+        
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, note.getTags());
+            pstmt.setInt(2, note.getId());
+            
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

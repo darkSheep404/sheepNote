@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -13,24 +14,52 @@ public class SQLiteConnection {
     private static Connection connection;
     public static final String db_path = "D:/sheepnote/data.sqlite";
 
-    public static Connection getConnection()  {
-        try{
-            // 加载 SQLite JDBC 驱动
-            Class.forName("org.sqlite.JDBC");
-            // 连接 SQLite 数据库
-            String url = getDbUrl();
-            connection = DriverManager.getConnection(url);
-            // 创建表格
-            Statement stmt = connection.createStatement();
-            String sql = "CREATE TABLE IF NOT EXISTS notes (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, file_path TEXT,line_number INTEGER, select_code TEXT,create_time DATETIME NOT NULL,update_time DATETIME NOT NULL)";
-            stmt.execute(sql);
-            stmt.close();
-            return connection;
+    public static Connection getConnection() {
+        try {
+            if (connection == null || connection.isClosed()) {
+                // 加载 SQLite JDBC 驱动
+                Class.forName("org.sqlite.JDBC");
+                // 连接 SQLite 数据库
+                String url = getDbUrl();
+                connection = DriverManager.getConnection(url);
+
+                // 检查并创建表
+                try (Statement stmt = connection.createStatement()) {
+                    // 创建 notes 表
+                    stmt.execute(
+                            "CREATE TABLE IF NOT EXISTS notes (" +
+                                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                                    "title TEXT NOT NULL," +
+                                    "file_path TEXT NOT NULL," +
+                                    "line_number INTEGER NOT NULL," +
+                                    "select_code TEXT," +
+                                    "tags TEXT," +
+                                    "create_time DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                                    "update_time DATETIME DEFAULT CURRENT_TIMESTAMP" +
+                                    ")"
+                    );
+
+                    // 检查是否存在 tags 列
+                    ResultSet rs = stmt.executeQuery("PRAGMA table_info(notes)");
+                    boolean hasTagsColumn = false;
+                    while (rs.next()) {
+                        if ("tags".equals(rs.getString("name"))) {
+                            hasTagsColumn = true;
+                            break;
+                        }
+                    }
+
+                    // 如果不存在 tags 列，添加它
+                    if (!hasTagsColumn) {
+                        stmt.execute("ALTER TABLE notes ADD COLUMN tags TEXT");
+                    }
+                }
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        catch (Exception e){
-           e.printStackTrace();
-            return null;
-        }
+        return connection;
     }
 
     @NotNull
