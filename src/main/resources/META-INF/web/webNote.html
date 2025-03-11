@@ -891,10 +891,15 @@
         selectedNoteId = note.id;
         noteItem =note;
         showNoteDetail(note);
-        renderNotes(notes.filter(n =>
-            document.getElementById('searchInput').value ?
-                n.noteTitle.toLowerCase().includes(document.getElementById('searchInput').value.toLowerCase()) : true
-        ));
+        renderNotes(notes.filter(n =>{
+            let value = document.getElementById('searchInput').value;
+            if(value){
+                return n.noteTitle.toLowerCase().includes(value.toLowerCase())||
+                    n.noteFilePath.toLowerCase().includes(value.toLowerCase())||
+                    n.selectCode.toLowerCase().includes(value.toLowerCase())
+        }else
+            return true;
+        }));
     }
 
     function showNoteDetail(note) {
@@ -1032,7 +1037,9 @@
     /** 搜索时保持选中状态 **/
     document.getElementById('searchInput').addEventListener('input', function() {
         const filtered = notes.filter(n =>
-            n.noteTitle.toLowerCase().includes(this.value.toLowerCase())
+            n.noteTitle.toLowerCase().includes(this.value.toLowerCase())||
+            n.noteFilePath.toLowerCase().includes(this.value.toLowerCase())||
+            n.selectCode.toLowerCase().includes(this.value.toLowerCase())
         );
         if(!filtered.some(n => n.id === selectedNoteId)) {
             selectedNoteId = filtered[0]?.id;
@@ -1164,8 +1171,10 @@
         
         // 应用搜索过滤
         if (searchText) {
-            filteredNotes = filteredNotes.filter(note =>
-                note.noteTitle.toLowerCase().includes(searchText)
+            filteredNotes = filteredNotes.filter(n =>
+                n.noteTitle.toLowerCase().includes(this.value.toLowerCase())||
+                n.noteFilePath.toLowerCase().includes(this.value.toLowerCase())||
+                n.selectCode.toLowerCase().includes(this.value.toLowerCase())
             );
         }
         
