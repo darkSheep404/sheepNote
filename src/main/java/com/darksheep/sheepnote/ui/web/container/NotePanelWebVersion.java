@@ -1,5 +1,6 @@
 package com.darksheep.sheepnote.ui.web.container;
 
+import com.darksheep.sheepnote.config.AddNoteEventListener;
 import com.darksheep.sheepnote.config.NoteDataRepository;
 import com.darksheep.sheepnote.data.NoteData;
 import com.darksheep.sheepnote.ui.web.handler.JBCefLocalRequestHandler;
@@ -10,6 +11,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -22,6 +24,8 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.cef.browser.CefBrowser;
 import org.cef.browser.CefFrame;
 import org.cef.handler.CefDisplayHandlerAdapter;
+import com.intellij.util.messages.MessageBus;
+
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,10 +40,13 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 public class NotePanelWebVersion extends SimpleToolWindowPanel {
+    private CefBrowser cefBrowser;
+    private JBCefBrowser webNoteBrowser;
 
-    public NotePanelWebVersion() {
+    public NotePanelWebVersion(Project project) {
         super(true, true);
-        JBCefBrowser webNoteBrowser = new JBCefBrowser();
+        webNoteBrowser = new JBCefBrowser();
+        cefBrowser = webNoteBrowser.getCefBrowser();
         
         WebResourceManager.setupBrowser(webNoteBrowser);
         webNoteBrowser.loadURL("http://localhost/webNote.html");
@@ -47,20 +54,96 @@ public class NotePanelWebVersion extends SimpleToolWindowPanel {
         
         initNoteListFromDB(webNoteBrowser);
         setContent(webNoteBrowser.getComponent());
-        
+
         // Dispose resources when no longer needed
         Disposer.register(ApplicationManager.getApplication(), webNoteBrowser);
+
+        // 订阅添加笔记事件
+        MessageBus messageBus = project.getMessageBus();
+        messageBus.connect(project).subscribe(AddNoteEventListener.ADD_NOTE_TOPIC, noteData -> {
+            System.out.println("Received new note: " + noteData);
+            ApplicationManager.getApplication().invokeLater(() -> {
+                try {
+                    String noteJson = new Gson().toJson(noteData);
+                    String script = String.format("if(typeof addNewNote === 'function') { addNewNote(%s); } else { console.error('addNewNote function not found'); }", noteJson);
+                    cefBrowser.executeJavaScript(script, webNoteBrowser.getCefBrowser().getURL(), 0);
+                } catch (Exception e) {
+                    System.err.println("Error executing JavaScript: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            });
+        });
+        
+
     }
 
     private  void initNoteListFromDB(JBCefBrowser webNoteBrowser) {
         CefBrowser cefBrowser = webNoteBrowser.getCefBrowser();
-        List<NoteData> noteDataList= NoteDataRepository.getAllNoteData();
+        List<NoteData> noteDataList = NoteDataRepository.getAllNoteData();
         if(noteDataList.isEmpty())
             noteDataList.add(NoteData.buildExampleNote());
+        
+        // 按创建时间降序排序
+        noteDataList.sort((a, b) -> {
+            try {
+                return -a.getCreateTime().compareTo(b.getCreateTime());
+            } catch (Exception e) {
+                return 0;
+            }
+        });
+        
         String noteDataJson = new Gson().toJson(noteDataList);
         String escapedJson = StringEscapeUtils.escapeJavaScript(noteDataJson);
 
         JBCefJSQuery openLinkQuery = JBCefJSQuery.create((JBCefBrowserBase)webNoteBrowser);
+        JBCefJSQuery updateNoteQuery = JBCefJSQuery.create((JBCefBrowserBase)webNoteBrowser);
+        JBCefJSQuery refreshNotesQuery = JBCefJSQuery.create((JBCefBrowserBase)webNoteBrowser);
+        JBCefJSQuery deleteNoteQuery = JBCefJSQuery.create((JBCefBrowserBase)webNoteBrowser);
+        
+        deleteNoteQuery.addHandler(noteId -> {
+            try {
+                NoteDataRepository.deleteNoteData(Integer.parseInt(noteId));
+                return new JBCefJSQuery.Response("OK");
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new JBCefJSQuery.Response("ERROR", 500, "Failed to delete note: " + e.getMessage());
+            }
+        });
+
+        refreshNotesQuery.addHandler(ignored -> {
+            try {
+                List<NoteData> newDataList = NoteDataRepository.getAllNoteData();
+                // 按创建时间降序排序
+                newDataList.sort((a, b) -> {
+                    try {
+                        return -a.getCreateTime().compareTo(b.getCreateTime());
+                    } catch (Exception e) {
+                        return 0;
+                    }
+                });
+                String newNoteDataJson = new Gson().toJson(newDataList);
+                String script = String.format("notes = %s; renderNotes(notes); if(notes.length > 0) { selectNote(notes[0]); }", newNoteDataJson);
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    cefBrowser.executeJavaScript(script, null, 0);
+                });
+                return new JBCefJSQuery.Response("OK");
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new JBCefJSQuery.Response("ERROR", 500, "Failed to refresh notes: " + e.getMessage());
+            }
+        });
+
+        updateNoteQuery.addHandler(noteItemJson -> {
+            try {
+                NoteData updatedNote = new Gson().fromJson(noteItemJson, NoteData.class);
+                NoteDataRepository.updateNote(updatedNote);
+                return new JBCefJSQuery.Response("OK");
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new JBCefJSQuery.Response("ERROR", 500, "Failed to update note: " + e.getMessage());
+            }
+        });
+
         //TODO 刷新,编辑,按照文件夹/tag 分类查看
         //TODO 图表形式组织笔记==>如何实现
         openLinkQuery.addHandler((noteItemJson)->{
@@ -92,11 +175,10 @@ public class NotePanelWebVersion extends SimpleToolWindowPanel {
             @Override
             public void onAddressChange(CefBrowser browser, CefFrame frame, String url) {
                 super.onAddressChange(browser, frame, url);
-                //需要dom加载完成再执行 否则会报错document.innerHTML = null
-                String script1= "document.addEventListener('DOMContentLoaded', function () {\n" +
+                String script1 = "document.addEventListener('DOMContentLoaded', function () {\n" +
                         "initializeNotes('" + escapedJson + "');"+
                         "});";
-                String script2 =  "window.openLink = function(link) {" +
+                String script2 = "window.openLink = function(link) {" +
                         openLinkQuery.inject(
                                 "link",
                                 "function(response){" +
@@ -106,9 +188,39 @@ public class NotePanelWebVersion extends SimpleToolWindowPanel {
                                         "alert(error_code+ ':' + error_message)" +
                                         "}")
                         +"};";
-                System.out.println(noteDataJson);
-                browser.executeJavaScript(script1,null,0);
-                browser.executeJavaScript(script2,null,0);
+                String script3 = "window.updateNote = function(note) {" +
+                        "return new Promise((resolve, reject) => {" +
+                        updateNoteQuery.inject(
+                                "JSON.stringify(note)",
+                                "function(response) { console.log('Note updated successfully'); resolve(response); }",
+                                "function(error_code, error_message) { reject(new Error(error_code + ': ' + error_message)); }"
+                        ) +
+                        "});" +
+                        "};";
+                String script4 = "window.refreshNoteList = function() {" +
+                        "return new Promise((resolve, reject) => {" +
+                        refreshNotesQuery.inject(
+                                "''",
+                                "function(response) { console.log('Notes refreshed successfully'); resolve(response); }",
+                                "function(error_code, error_message) { reject(new Error(error_code + ': ' + error_message)); }"
+                        ) +
+                        "});" +
+                        "};";
+                String script5 = "window.deleteNoteFromDB = function(noteId) {" +
+                        "return new Promise((resolve, reject) => {" +
+                        deleteNoteQuery.inject(
+                                "noteId.toString()",
+                                "function(response) { console.log('Note deleted successfully'); resolve(response); }",
+                                "function(error_code, error_message) { reject(new Error(error_code + ': ' + error_message)); }"
+                        ) +
+                        "});" +
+                        "};";
+                
+                browser.executeJavaScript(script1, null, 0);
+                browser.executeJavaScript(script2, null, 0);
+                browser.executeJavaScript(script3, null, 0);
+                browser.executeJavaScript(script4, null, 0);
+                browser.executeJavaScript(script5, null, 0);
             }
         });
 

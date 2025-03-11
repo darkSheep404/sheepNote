@@ -104,7 +104,7 @@ public class NoteListController {
                 //从缓存的笔记列表中删除笔记
                 noteDataList.remove(selectedNote);
                 //从数据库中删除笔记
-                NoteDataRepository.deleteNoteData(selectedNote);
+                NoteDataRepository.deleteNoteData(selectedNote.id);
                 //从编辑器已经渲染的文本中移除 笔记标题
                 EditorHelper.removeTextRenderInEditor(selectedNote,project);
             }

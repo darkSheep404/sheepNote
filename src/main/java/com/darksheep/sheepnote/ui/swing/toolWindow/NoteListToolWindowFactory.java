@@ -93,7 +93,7 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
         Content mainContent = contentFactory.createContent(mainPanel, "NoteList", false);
         //第三个 浏览器
         Content browserContent = contentFactory.createContent(new BrowserPanel(), "Browser", false);
-        Content notePanelWebVersion = contentFactory.createContent(new NotePanelWebVersion(), "NoteList V2", false);
+        Content notePanelWebVersion = contentFactory.createContent(new NotePanelWebVersion(project), "NoteList V2", false);
 
         // 添加流程图面板作为新的标签页
         NoteFlowchartPanel flowchartPanel = new NoteFlowchartPanel(project);

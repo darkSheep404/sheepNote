@@ -103,18 +103,12 @@ public class NoteDataRepository {
         }
     }
 
-    public static void deleteNoteData(NoteData noteData){
-        //新添加 直接渲染到ui上的数据 目前存在ui上的内容 还没有id
-        if(Objects.isNull(noteData.id)){
-            //do noting
-        }
-        else{
-            try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement("delete from notes where id = ?")) {
-                stmt.setInt(1, noteData.id);
-                stmt.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+    public static void deleteNoteData(Integer noteId){
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement("delete from notes where id = ?")) {
+            stmt.setInt(1, noteId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
     }
@@ -260,6 +254,26 @@ public class NoteDataRepository {
             pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void updateNote(NoteData noteData) {
+        String sql = "UPDATE notes SET title = ?, file_path = ?, line_number = ?, select_code = ?, tags = ?, update_time = datetime('now') WHERE id = ?";
+        
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, noteData.noteTitle);
+            pstmt.setString(2, noteData.noteFilePath);
+            pstmt.setInt(3, noteData.noteLineNumber);
+            pstmt.setString(4, noteData.selectCode);
+            pstmt.setString(5, noteData.tags);
+            pstmt.setInt(6, noteData.id);
+            
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to update note: " + e.getMessage());
         }
     }
 }
