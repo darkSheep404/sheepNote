@@ -25,7 +25,7 @@ public class NoteDataRepository {
     }
 
     private static void initFlowchartTable() {
-        try (Statement stmt = connection.createStatement()) {
+        try (Statement stmt = getConnection().createStatement()) {
             stmt.execute(
                 "CREATE TABLE IF NOT EXISTS flowcharts (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -77,7 +77,7 @@ public class NoteDataRepository {
         List<NoteData> noteDataList = new ArrayList<>();
         try {
             String sql = "SELECT id, title, file_path, line_number, select_code, tags, create_time, update_time FROM notes";
-            PreparedStatement statement = connection.prepareStatement(sql);
+            PreparedStatement statement = getConnection().prepareStatement(sql);
             ResultSet resultSet = statement.executeQuery();
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             while (resultSet.next()) {
@@ -122,7 +122,7 @@ public class NoteDataRepository {
     // 流程图相关方法
     public static void saveFlowchart(FlowchartData flowchart) {
         String sql = "INSERT INTO flowcharts (name, data, create_time) VALUES (?, ?, ?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
             pstmt.setString(1, flowchart.getName());
             pstmt.setString(2, flowchart.getData());
             pstmt.setLong(3, flowchart.getCreateTime());
@@ -136,7 +136,7 @@ public class NoteDataRepository {
         List<FlowchartData> flowcharts = new ArrayList<>();
         String sql = "SELECT * FROM flowcharts ORDER BY create_time DESC";
         
-        try (Statement stmt = connection.createStatement();
+        try (Statement stmt = getConnection().createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             
             while (rs.next()) {
@@ -156,7 +156,7 @@ public class NoteDataRepository {
 
     public static FlowchartData getFlowchartById(int id) {
         String sql = "SELECT * FROM flowcharts WHERE id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
             FlowchartData flowchart = new FlowchartData();
@@ -181,7 +181,7 @@ public class NoteDataRepository {
                     "WHERE title LIKE ? OR select_code LIKE ? " +
                     "ORDER BY update_time DESC";
         
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
             String searchPattern = "%" + keyword + "%";
             pstmt.setString(1, searchPattern);
             pstmt.setString(2, searchPattern);
@@ -223,7 +223,7 @@ public class NoteDataRepository {
             
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
-            
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             if (rs.next()) {
                 NoteData note = new NoteData();
                 note.id = rs.getInt("id");
@@ -232,11 +232,13 @@ public class NoteDataRepository {
                 note.noteLineNumber = rs.getInt("line_number");
                 note.selectCode = rs.getString("select_code");
                 note.tags = rs.getString("tags");
-                note.createTime = rs.getTimestamp("create_time");
-                note.updateTime = rs.getTimestamp("update_time");
+                String createTime = rs.getString("create_time");
+                String updateTime = rs.getString("update_time");
+                note.createTime = dateFormat.parse(createTime);
+                note.updateTime = dateFormat.parse(updateTime);
                 return note;
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;

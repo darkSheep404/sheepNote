@@ -534,7 +534,7 @@
             
             jumpToFileItem.style.display = activeNode.dataset.notePath ? 'block' : 'none';
             toggleCodeItem.style.display = activeNode.querySelector('.node-content') ? 'block' : 'none';
-            
+
             // 检查连接数量
             const connections = instance.getConnections({ source: activeNode.id });
             document.getElementById('addNextNode').style.display = 
@@ -549,6 +549,13 @@
                     y: rect.top
                 };
                 showSearchPanel(newPosition, activeNode);
+            }
+            hideContextMenu();
+        });
+
+        document.getElementById('jumpToFile').addEventListener('click', () => {
+            if (activeNode && activeNode.dataset.notePath) {
+                window.jumpToFile(activeNode.dataset.notePath);
             }
             hideContextMenu();
         });

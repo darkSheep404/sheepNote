@@ -108,6 +108,9 @@ public class NoteFlowchartPanel extends JPanel {
                     if (file != null && file.exists()) {
                         FileEditorManager.getInstance(project).openFile(file, true);
                     }
+                    else {
+                        JOptionPane.showMessageDialog(null, "File not found: " + filePath);
+                    }
                 });
                 return new JBCefJSQuery.Response("OK");
             } catch (Exception e) {
