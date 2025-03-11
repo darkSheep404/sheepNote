@@ -23,11 +23,10 @@ public final class FlowchartService {
         this.gson = new Gson();
     }
 
-    public void saveFlowchart(@NotNull String name, @NotNull String flowchartData) {
+    public void saveFlowchart(FlowchartData flowchartData) {
         // 解析流程图内容
-        JsonObject flowchartContent = gson.fromJson(flowchartData, JsonObject.class);
+        JsonObject flowchartContent = gson.fromJson(flowchartData.getData(), JsonObject.class);
         JsonArray nodes = flowchartContent.getAsJsonArray("nodes");
-        
         // 收集需要更新标签的笔记
         Set<NoteData> notesToUpdate = new HashSet<>();
         
@@ -41,16 +40,12 @@ public final class FlowchartService {
                 // 获取笔记并更新标签
                 NoteData note = NoteDataRepository.getNoteById(noteId);
                 if (note != null) {
-                    note.addTag(name);
+                    note.addTag(flowchartData.getName());
                     notesToUpdate.add(note);
                 }
             }
         }
-        
-        // 保存流程图
-        FlowchartData data = new FlowchartData(name, flowchartData);
-        NoteDataRepository.saveFlowchart(data);
-        
+        NoteDataRepository.saveFlowchart(flowchartData);
         // 更新笔记的标签
         for (NoteData note : notesToUpdate) {
             NoteDataRepository.updateNoteTags(note);
@@ -72,7 +67,7 @@ public final class FlowchartService {
     public String getFlowchartById(String id) {
         try {
             FlowchartData flowchart = NoteDataRepository.getFlowchartById(Integer.parseInt(id));
-            return flowchart != null ? flowchart.getData() : null;
+            return gson.toJson(flowchart);
         } catch (NumberFormatException e) {
             return null;
         }

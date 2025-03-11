@@ -1,5 +1,6 @@
 package com.darksheep.sheepnote.ui.web.container;
 
+import com.darksheep.sheepnote.data.FlowchartData;
 import com.darksheep.sheepnote.data.NoteData;
 import com.darksheep.sheepnote.data.service.FlowchartService;
 import com.darksheep.sheepnote.ui.web.handler.WebResourceManager;
@@ -51,10 +52,8 @@ public class NoteFlowchartPanel extends JPanel {
         JBCefJSQuery saveFlowchartQuery = JBCefJSQuery.create((JBCefBrowserBase)browser);
         saveFlowchartQuery.addHandler((String data) -> {
             try {
-                Map<String, Object> flowchartData = gson.fromJson(data, Map.class);
-                String name = (String) flowchartData.get("name");
-                String content = gson.toJson(flowchartData.get("content"));
-                flowchartService.saveFlowchart(name, content);
+                FlowchartData flowchartData = gson.fromJson(data, FlowchartData.class);
+                flowchartService.saveFlowchart(flowchartData);
                 return new JBCefJSQuery.Response("OK");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -191,15 +190,6 @@ public class NoteFlowchartPanel extends JPanel {
         "};");
 
         browser.getCefBrowser().executeJavaScript(script.toString(), "", 0);
-    }
-
-    public void loadSavedFlowchart(String flowchartId) {
-        String flowchartData = flowchartService.getFlowchartById(flowchartId);
-        if (flowchartData != null) {
-            System.out.println(flowchartData);
-            String script = String.format("loadFlowchart(%s);", gson.toJson(flowchartData) );
-            browser.getCefBrowser().executeJavaScript(script, "", 0);
-        }
     }
     private String getExtension(String fileName) {
         int dotIndex = fileName.lastIndexOf('.');

@@ -115,11 +115,12 @@ public class NoteDataRepository {
 
     // 流程图相关方法
     public static void saveFlowchart(FlowchartData flowchart) {
-        String sql = "INSERT INTO flowcharts (name, data, create_time) VALUES (?, ?, ?)";
+        String sql = "INSERT OR REPLACE INTO flowcharts (name, data, create_time,id) VALUES (?, ?, ?,?)";
         try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
             pstmt.setString(1, flowchart.getName());
             pstmt.setString(2, flowchart.getData());
             pstmt.setLong(3, flowchart.getCreateTime());
+            pstmt.setInt(4, flowchart.getId());
             pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
