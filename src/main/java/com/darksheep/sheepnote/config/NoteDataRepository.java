@@ -11,8 +11,10 @@ import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static com.darksheep.sheepnote.config.SQLiteConnection.getConnection;
 
@@ -45,11 +47,12 @@ public class NoteDataRepository {
             // 使用事务以确保同时插入新记录并获取新记录ID的一致性
             conn.setAutoCommit(false);
 
-            try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO notes(title, file_path, line_number, select_code, create_time, update_time) VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))")) {
+            try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO notes(title, file_path, line_number, select_code, create_time, update_time,tags) VALUES (?, ?, ?, ?, datetime('now'), datetime('now'),?)")) {
                 stmt.setString(1, noteData.noteTitle);
                 stmt.setString(2, noteData.noteFilePath);
                 stmt.setInt(3, noteData.noteLineNumber);
                 stmt.setString(4, noteData.selectCode);
+                stmt.setString(5, noteData.tags);
                 stmt.executeUpdate();
             }
 
@@ -76,7 +79,7 @@ public class NoteDataRepository {
     public static List<NoteData> getAllNoteData() {
         List<NoteData> noteDataList = new ArrayList<>();
         try {
-            String sql = "SELECT id, title, file_path, line_number, select_code, tags, create_time, update_time FROM notes";
+            String sql = "SELECT id, title, file_path, line_number, select_code, tags, create_time, update_time FROM notes order by create_time desc";
             PreparedStatement statement = getConnection().prepareStatement(sql);
             ResultSet resultSet = statement.executeQuery();
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -101,6 +104,27 @@ public class NoteDataRepository {
             e.printStackTrace();
             return noteDataList;
         }
+    }
+
+    public static List<String> getAllTags() {
+        List<String> allTags = new ArrayList<>();
+        Set<String> uniqueTags = new HashSet<>();
+
+        List<NoteData> allNotes = getAllNoteData();
+        for (NoteData note : allNotes) {
+            if (note.getTags() != null && !note.getTags().isEmpty()) {
+                String[] tags = note.getTags().split(",");
+                for (String tag : tags) {
+                    String trimmedTag = tag.trim();
+                    if (!trimmedTag.isEmpty()) {
+                        uniqueTags.add(trimmedTag);
+                    }
+                }
+            }
+        }
+
+        allTags.addAll(uniqueTags);
+        return allTags;
     }
 
     public static void deleteNoteData(Integer noteId){
