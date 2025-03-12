@@ -2,33 +2,31 @@ package com.darksheep.sheepnote.data;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Date;
+
 public class FlowchartData {
-    private int id;
+    private Integer id;
     private String name;
     private String data;
-    private long createTime;
+    public Date createTime;
+
+    public Date updateTime;
 
     public FlowchartData(@NotNull String name, @NotNull String data) {
         this.name = name;
         this.data = data;
-        this.createTime = System.currentTimeMillis();
+        this.createTime = new Date();
+        this.updateTime = new Date();
     }
 
     public FlowchartData() {
     }
 
-    public FlowchartData(int id, @NotNull String name, @NotNull String data, long createTime) {
-        this.id = id;
-        this.name = name;
-        this.data = data;
-        this.createTime = createTime;
-    }
-
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -50,11 +48,19 @@ public class FlowchartData {
         this.data = data;
     }
 
-    public long getCreateTime() {
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+    }
+
+    public Date getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(long createTime) {
+    public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
-} 
+}

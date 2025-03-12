@@ -23,7 +23,7 @@ public final class FlowchartService {
         this.gson = new Gson();
     }
 
-    public void saveFlowchart(FlowchartData flowchartData) {
+    public Integer saveFlowchart(FlowchartData flowchartData) {
         // 解析流程图内容
         JsonObject flowchartContent = gson.fromJson(flowchartData.getData(), JsonObject.class);
         JsonArray nodes = flowchartContent.getAsJsonArray("nodes");
@@ -45,23 +45,21 @@ public final class FlowchartService {
                 }
             }
         }
-        NoteDataRepository.saveFlowchart(flowchartData);
+        Integer Id = NoteDataRepository.saveFlowchart(flowchartData);
         // 更新笔记的标签
         for (NoteData note : notesToUpdate) {
             NoteDataRepository.updateNoteTags(note);
         }
+        return Id;
     }
 
-    public List<Map<String, String>> getFlowcharts() {
+    public void deleteFlowchart(int id) {
+        NoteDataRepository.deleteFlowchart(id);
+    }
+
+    public List<FlowchartData> getFlowcharts() {
         List<FlowchartData> flowcharts = NoteDataRepository.getAllFlowcharts();
-        return flowcharts.stream()
-            .map(f -> {
-                Map<String, String> map = new HashMap<>();
-                map.put("id", String.valueOf(f.getId()));
-                map.put("name", f.getName());
-                return map;
-            })
-            .collect(Collectors.toList());
+        return flowcharts;
     }
 
     public String getFlowchartById(String id) {

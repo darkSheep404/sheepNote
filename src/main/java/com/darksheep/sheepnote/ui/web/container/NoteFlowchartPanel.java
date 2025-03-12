@@ -53,8 +53,8 @@ public class NoteFlowchartPanel extends JPanel {
         saveFlowchartQuery.addHandler((String data) -> {
             try {
                 FlowchartData flowchartData = gson.fromJson(data, FlowchartData.class);
-                flowchartService.saveFlowchart(flowchartData);
-                return new JBCefJSQuery.Response("OK");
+                Integer id = flowchartService.saveFlowchart(flowchartData);
+                return new JBCefJSQuery.Response(id.toString());
             } catch (Exception e) {
                 e.printStackTrace();
                 return new JBCefJSQuery.Response("ERROR", 500, e.getMessage());
@@ -65,7 +65,7 @@ public class NoteFlowchartPanel extends JPanel {
         JBCefJSQuery getFlowchartsQuery = JBCefJSQuery.create((JBCefBrowserBase)browser);
         getFlowchartsQuery.addHandler((String data) -> {
             try {
-                List<Map<String, String>> flowcharts = flowchartService.getFlowcharts();
+                List<FlowchartData> flowcharts = flowchartService.getFlowcharts();
                 return new JBCefJSQuery.Response(gson.toJson(flowcharts));
             } catch (Exception e) {
                 e.printStackTrace();

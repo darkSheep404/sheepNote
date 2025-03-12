@@ -29,12 +29,13 @@ public class NoteDataRepository {
     private static void initFlowchartTable() {
         try (Statement stmt = getConnection().createStatement()) {
             stmt.execute(
-                "CREATE TABLE IF NOT EXISTS flowcharts (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "name TEXT NOT NULL," +
-                "data TEXT NOT NULL," +
-                "create_time BIGINT NOT NULL" +
-                ")"
+                    "CREATE TABLE IF NOT EXISTS flowcharts (" +
+                            "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                            "name TEXT NOT NULL," +
+                            "data TEXT NOT NULL," +
+                            "create_time DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                            "update_time DATETIME DEFAULT CURRENT_TIMESTAMP" +
+                            ")"
             );
         } catch (SQLException e) {
             e.printStackTrace();
@@ -138,16 +139,30 @@ public class NoteDataRepository {
     }
 
     // 流程图相关方法
-    public static void saveFlowchart(FlowchartData flowchart) {
-        String sql = "INSERT OR REPLACE INTO flowcharts (name, data, create_time,id) VALUES (?, ?, ?,?)";
+    public static Integer saveFlowchart(FlowchartData flowchart) {
+        String sql = "INSERT OR REPLACE INTO flowcharts (name, data, update_time,id) VALUES (?, ?,datetime('now'),?)";
         try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
             pstmt.setString(1, flowchart.getName());
             pstmt.setString(2, flowchart.getData());
-            pstmt.setLong(3, flowchart.getCreateTime());
-            pstmt.setInt(4, flowchart.getId());
+            if (flowchart.getId() != null) {
+                pstmt.setInt(3, flowchart.getId());
+            } else {
+                pstmt.setNull(3, java.sql.Types.INTEGER);
+            }
             pstmt.executeUpdate();
+            if(flowchart.getId() != null){
+                return flowchart.getId();
+            }
+            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    return generatedKeys.getInt(1);
+                } else {
+                    throw new SQLException("Creating flowchart failed, no ID obtained.");
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new RuntimeException("Failed to save flowchart: " + e.getMessage());
         }
     }
 
@@ -160,22 +175,29 @@ public class NoteDataRepository {
             
             while (rs.next()) {
                 FlowchartData flowchart = new FlowchartData();
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 flowchart.setId(rs.getInt("id"));
                 flowchart.setName(rs.getString("name"));
                 flowchart.setData(rs.getString("data"));
-                flowchart.setCreateTime(rs.getLong("create_time"));
+                String createTime = rs.getString("create_time");
+                String updateTime = rs.getString("update_time");
+                flowchart.createTime = dateFormat.parse(createTime);
+                flowchart.updateTime = dateFormat.parse(updateTime);
                 flowcharts.add(flowchart);
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
         }
-        
+
         return flowcharts;
     }
 
     public static FlowchartData getFlowchartById(int id) {
         String sql = "SELECT * FROM flowcharts WHERE id = ?";
         try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
             FlowchartData flowchart = new FlowchartData();
@@ -183,11 +205,16 @@ public class NoteDataRepository {
                 flowchart.setId(rs.getInt("id"));
                 flowchart.setName(rs.getString("name"));
                 flowchart.setData(rs.getString("data"));
-                flowchart.setCreateTime(rs.getLong("create_time"));
+                String createTime = rs.getString("create_time");
+                String updateTime = rs.getString("update_time");
+                flowchart.createTime = dateFormat.parse(createTime);
+                flowchart.updateTime = dateFormat.parse(updateTime);
                 return flowchart;
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
         }
         return null;
     }
@@ -299,6 +326,17 @@ public class NoteDataRepository {
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Failed to update note: " + e.getMessage());
+        }
+    }
+
+    public static void deleteFlowchart(int id) {
+        String sql = "DELETE FROM flowcharts WHERE id = ?";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to delete flowchart: " + e.getMessage());
         }
     }
 }

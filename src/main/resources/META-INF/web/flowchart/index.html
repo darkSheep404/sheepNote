@@ -8,6 +8,10 @@
 </head>
 <body>
     <div class="toolbar">
+        <div class="flowchart-info">
+            <div class="flowchart-current-name">Untitled Flowchart</div>
+            <div class="flowchart-current-time"></div>
+        </div>
         <div class="toolbar-group">
             <button id="newNode" class="toolbar-btn">
                 <span class="icon">＋</span>New Node
@@ -89,8 +93,37 @@
             padding: 8px 16px;
             z-index: 100;
             display: flex;
-            justify-content: center;
+            align-items: center;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .flowchart-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding-right: 16px;
+        }
+
+        .flowchart-current-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .flowchart-current-time {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* 暗色模式支持 */
+        @media (prefers-color-scheme: dark) {
+            .flowchart-current-name {
+                color: #ffffff;
+            }
+            
+            .flowchart-current-time {
+                color: rgba(255, 255, 255, 0.6);
+            }
         }
 
         .toolbar-group {
@@ -335,9 +368,42 @@
             transition: all 0.2s;
         }
 
-        .flowchart-list-item:hover {
-            background: rgba(0, 122, 255, 0.1);
-            transform: translateY(-1px);
+        .flowchart-item-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .flowchart-name-time {
+            flex: 1;
+        }
+
+        .flowchart-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .flowchart-time {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .delete-flowchart-btn {
+            background: none;
+            border: none;
+            color: #FF3B30;
+            font-size: 18px;
+            padding: 4px 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            opacity: 0.7;
+            transition: all 0.2s;
+        }
+
+        .delete-flowchart-btn:hover {
+            opacity: 1;
+            background: rgba(255, 59, 48, 0.1);
         }
 
         .modal-buttons {
@@ -382,18 +448,16 @@
                 background: rgba(255, 255, 255, 0.12);
             }
 
-            .flowchart-list {
-                background: rgba(255, 255, 255, 0.05);
+            .flowchart-time {
+                color: rgba(255, 255, 255, 0.6);
             }
 
-            .flowchart-list-item {
-                background: rgba(30, 30, 30, 0.8);
-                color: white;
+            .delete-flowchart-btn {
+                color: #FF453A;
             }
 
-            .search-result-item:hover,
-            .flowchart-list-item:hover {
-                background: rgba(0, 122, 255, 0.2);
+            .delete-flowchart-btn:hover {
+                background: rgba(255, 69, 58, 0.2);
             }
 
             #cancelSearch,
@@ -616,13 +680,17 @@
                 try {
                     const flowchartContent = getCurrentFlowChartData();
                     const flowchartData = {
-                        id: currentFlowchartId, // 添加ID用于更新
+                        id: currentFlowchartId,
                         name: name,
                         data: JSON.stringify(flowchartContent)
                     };
                     console.log('await saveFlowchart:', flowchartData);
-                    await window.saveFlowchart(flowchartData);
+                    const id = await window.saveFlowchart(flowchartData);
                     document.getElementById('saveDialog').style.display = 'none';
+                    currentFlowchartId = id;
+                    currentFlowchartName = name;
+                    // 更新顶部显示
+                    updateFlowchartInfo(name, new Date());
                 } catch (error) {
                     console.error('保存失败:', error);
                 }
@@ -676,7 +744,61 @@
             flowcharts.forEach(flowchart => {
                 const item = document.createElement('div');
                 item.className = 'flowchart-list-item';
-                item.textContent = flowchart.name;
+                
+                const itemContent = document.createElement('div');
+                itemContent.className = 'flowchart-item-content';
+                
+                const nameAndTime = document.createElement('div');
+                nameAndTime.className = 'flowchart-name-time';
+                
+                const name = document.createElement('div');
+                name.className = 'flowchart-name';
+                name.textContent = flowchart.name;
+                
+                const time = document.createElement('div');
+                time.className = 'flowchart-time';
+                const date = new Date(flowchart.updateTime);
+                time.textContent = date.toLocaleDateString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }).replace(/\//g, '-');
+                
+                nameAndTime.appendChild(name);
+                nameAndTime.appendChild(time);
+                itemContent.appendChild(nameAndTime);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-flowchart-btn';
+                deleteBtn.innerHTML = '×';
+                deleteBtn.title = 'Delete Flowchart';
+                
+                deleteBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    if (confirm('Are you sure to delete this flowchart?')) {
+                        try {
+                            await window.deleteFlowchart(flowchart.id);
+                            item.remove();
+                            if (currentFlowchartId === flowchart.id) {
+                                // 如果删除的是当前打开的流程图，清空画布
+                                instance.reset();
+                                const container = document.getElementById('flowchartContainer');
+                                container.innerHTML = '';
+                                currentFlowchartId = null;
+                                currentFlowchartName = null;
+                            }
+                        } catch (error) {
+                            console.error('删除流程图失败:', error);
+                            alert('Failed to delete flowchart');
+                        }
+                    }
+                });
+                
+                itemContent.appendChild(deleteBtn);
+                item.appendChild(itemContent);
+                
                 item.addEventListener('click', async () => {
                     try {
                         console.log('await loadFlowchart:', flowchart.id);
@@ -686,6 +808,7 @@
                         console.error('加载流程图失败:', error);
                     }
                 });
+                
                 listContainer.appendChild(item);
             });
         }
@@ -732,10 +855,13 @@
                     return;
                 }
 
-                // 设置当前流程图ID
+                // 设置当前流程图ID和名称
                 currentFlowchartId = flowchartId;
                 currentFlowchartName = flowchartData.name;
                 
+                // 更新顶部显示
+                updateFlowchartInfo(flowchartData.name, new Date(flowchartData.updateTime));
+
                 const data = JSON.parse(flowchartData.data);
                 if (!data || !data.nodes || !Array.isArray(data.nodes)) {
                     console.error('流程图数据格式不正确');
@@ -786,6 +912,26 @@
                 nodeCounter = Math.max(...nodeIds, 0);
             } catch (error) {
                 console.error('加载流程图失败:', error);
+            }
+        }
+
+        // 添加更新流程图信息的函数
+        function updateFlowchartInfo(name, updateTime) {
+            const nameElement = document.querySelector('.flowchart-current-name');
+            const timeElement = document.querySelector('.flowchart-current-time');
+            
+            nameElement.textContent = name || 'Untitled Flowchart';
+            
+            if (updateTime) {
+                timeElement.textContent = updateTime.toLocaleDateString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }).replace(/\//g, '-');
+            } else {
+                timeElement.textContent = '';
             }
         }
 

@@ -100,10 +100,11 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
         Content flowchartContent = contentFactory.createContent(flowchartPanel, "NoteFlowChart", false);
 
         browserContent.setIcon(AllIcons.Actions.IntentionBulb);
-        toolWindow.getContentManager().addContent(browserContent);
+
         toolWindow.getContentManager().addContent(notePanelWebVersion);
         toolWindow.getContentManager().addContent(flowchartContent);
         toolWindow.getContentManager().setSelectedContent(notePanelWebVersion);
+        toolWindow.getContentManager().addContent(browserContent);
         toolWindow.getContentManager().addContent(mainContent);
     }
 
