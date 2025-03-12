@@ -8,7 +8,7 @@
     <name>SheepNotes</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="sfa_freshman@qq.com" url="https://github.com/darkSheep404">DarkSheep404</vendor>
+    <vendor email="sfa_freshman@qq.com" url="https://github.com/darkSheep404/sheepNote/issues">DarkSheep404</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
@@ -18,11 +18,10 @@
 
      <ul>
      <li>select code to make note for them</li>
-     <li>noteTitle will display like comments</li>
      <li>search,manage and view note and selected code  in sheepNote toolsWindow</li>
-     <li>click notepath in noteDetail to navigate to code file and lineNumber</li>
-     <li>display icon on note line,click icon can navigate note in note list</li>
-     <ul>   
+     <li>click notepath in noteDetail to jump to file in IDEA</li>
+     <ul>
+    <br>
 
     <strong>notes will be stored at 'D:\sheepnote\data.sqllite' by default,</strong><br>
     <strong>And due to this, this plugin cannot work on mac or win without "D:"</strong>
@@ -32,19 +31,23 @@
     <strong>if this plugin do help to you, or you have any suggestions,pls star/issue/pr in below github repo </strong><br>
     <strong><a href ="https://github.com/darkSheep404/sheepNote">this github repository</a></strong><br>
 
-    <img src ="https://plugins.jetbrains.com/files/21869/screenshot_327df43d-74bd-4b56-9a47-7ea1e8377532"/><br>
+    <img src ="https://plugins.jetbrains.com/files/21869/screenshot_b1298005-d564-4568-9e07-fb78046b967b"/><br>
+
+    <img src ="	https://plugins.jetbrains.com/files/21869/screenshot_da354af7-58b1-4626-ae97-ca86cfb7acb3"/><br>
+
+    <img src ="https://plugins.jetbrains.com/files/21869/screenshot_da354af7-58b1-4626-ae97-ca86cfb7acb3"/><br>
 
     <img src ="https://plugins.jetbrains.com/files/21869/screenshot_502b6238-908e-45cf-8698-3437266e7bef"/><br>
-
-    <img src ="https://plugins.jetbrains.com/files/21869/screenshot_c4e5615d-2702-49c2-a568-04d41a55f3c1"/><br>
-
-    <img src ="https://plugins.jetbrains.com/files/21869/screenshot_951e9f00-24c3-4b09-8d23-9b56a8b4a330"/><br>
 
 
   ]]></description>
     <change-notes>
         <![CDATA[
       <ul>
+       <li><b>2025.03.32</b><br>
+                renew UI<br>
+                重构UI
+            </li>
        <li><b>2023.06.20</b><br>
                 update desc<br>
                 更新描述
