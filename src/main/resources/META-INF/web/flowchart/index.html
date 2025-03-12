@@ -10,68 +10,68 @@
     <div class="toolbar">
         <div class="toolbar-group">
             <button id="newNode" class="toolbar-btn">
-                <span class="icon">＋</span>新建节点
+                <span class="icon">＋</span>New Node
             </button>
             <button id="loadFlowchart" class="toolbar-btn">
-                <span class="icon">📂</span>加载流程图
+                <span class="icon">📂</span>Load Flowchart
             </button>
             <button id="save" class="toolbar-btn">
-                <span class="icon">💾</span>保存流程图
+                <span class="icon">💾</span>Save Flowchart
             </button>
             <button id="toggleAllCode" class="toolbar-btn">
-                <span class="icon">📝</span><span id="toggleAllCodeText">展开代码</span>
+                <span class="icon">📝</span><span id="toggleAllCodeText">Expand Code</span>
             </button>
             <button id="refresh" class="toolbar-btn">
-                <span class="icon">⟳</span>刷新
+                <span class="icon">⟳</span>Refresh
             </button>
         </div>
     </div>
     
     <div id="searchPanel" class="modal">
         <div class="modal-content search-panel-content">
-            <h3>添加节点</h3>
+            <h3>Add Node</h3>
             <div class="search-input-wrapper">
                 <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16">
                     <path fill="none" stroke="currentColor" stroke-width="2" d="M15 15l6 6m-11-4a7 7 0 110-14 7 7 0 010 14z"/>
                 </svg>
-                <input type="text" id="searchInput" placeholder="搜索笔记或输入文本">
+                <input type="text" id="searchInput" placeholder="Search notes or enter text">
             </div>
             <div class="search-panel-scroll">
                 <div id="searchResults" class="search-results"></div>
             </div>
             <div class="modal-buttons">
-                <button id="useCustomText" class="primary-button">使用输入文本</button>
-                <button id="cancelSearch" class="secondary-button">取消</button>
+                <button id="useCustomText" class="primary-button">Use Input Text</button>
+                <button id="cancelSearch" class="secondary-button">Cancel</button>
             </div>
         </div>
     </div>
 
     <div id="saveDialog" class="modal">
         <div class="modal-content">
-            <h3>保存流程图</h3>
-            <input type="text" id="flowchartName" placeholder="输入流程图名称">
+            <h3>Save Flowchart</h3>
+            <input type="text" id="flowchartName" placeholder="Enter flowchart name">
             <div class="modal-buttons">
-                <button id="confirmSave">保存</button>
-                <button id="cancelSave">取消</button>
+                <button id="confirmSave">Save</button>
+                <button id="cancelSave">Cancel</button>
             </div>
         </div>
     </div>
 
     <div id="loadDialog" class="modal">
         <div class="modal-content">
-            <h3>加载流程图</h3>
+            <h3>Load Flowchart</h3>
             <div id="flowchartList" class="flowchart-list"></div>
             <div class="modal-buttons">
-                <button id="cancelLoad">取消</button>
+                <button id="cancelLoad">Cancel</button>
             </div>
         </div>
     </div>
 
     <div id="contextMenu" class="context-menu">
-        <div class="menu-item" id="addNextNode">添加下一个节点</div>
-        <div class="menu-item" id="jumpToFile">跳转到文件</div>
-        <div class="menu-item" id="toggleCode">展开/折叠代码</div>
-        <div class="menu-item" id="deleteNode">删除节点</div>
+        <div class="menu-item" id="addNextNode">Add Next Node</div>
+        <div class="menu-item" id="jumpToFile">Jump to File</div>
+        <div class="menu-item" id="toggleCode">Toggle Code</div>
+        <div class="menu-item" id="deleteNode">Delete Node</div>
     </div>
 
     <div id="flowchartContainer"></div>
@@ -652,7 +652,7 @@
                 }
             });
             document.getElementById('toggleAllCodeText').textContent = 
-                isAllCodeExpanded ? '折叠所有代码' : '展开所有代码';
+                isAllCodeExpanded ? 'Collapse Code' : 'Expand Code';
         });
 
         document.getElementById('loadFlowchart').addEventListener('click', async () => {
@@ -794,7 +794,7 @@
             searchResults.innerHTML = '';
             
             if (!Array.isArray(results)) {
-                console.error('搜索结果格式不正确');
+                console.error('Invalid search results format');
                 return;
             }
             
@@ -803,10 +803,10 @@
 
                 const item = document.createElement('div');
                 item.className = 'search-result-item';
-                item.textContent = result.noteTitle || '未命名笔记';
+                item.textContent = result.noteTitle || 'Untitled Note';
                 item.addEventListener('click', () => {
                     const pos = position || currentMousePos;
-                    const newNode = createNode(result.noteTitle || '未命名笔记', pos, {
+                    const newNode = createNode(result.noteTitle || 'Untitled Note', pos, {
                         noteFilePath: result.noteFilePath,
                         id: result.id,
                         selectCode: result.selectCode,
@@ -834,13 +834,12 @@
             node.id = nodeId;
             node.className = 'flowchart-node';
             
-            // 创建节点内容结构
             const header = document.createElement('div');
             header.className = 'node-header';
             
             const title = document.createElement('h3');
             title.className = 'node-title';
-            title.textContent = text || '未命名节点';
+            title.textContent = text || 'Untitled Node';
             
             header.appendChild(title);
             node.appendChild(header);

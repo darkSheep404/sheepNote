@@ -90,21 +90,21 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
         // 创建一个新的 Content
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
         // 第一个 Content，包含主面板
-        Content mainContent = contentFactory.createContent(mainPanel, "NoteList", false);
+        Content mainContent = contentFactory.createContent(mainPanel, "NoteList(Deprecated) ", false);
         //第三个 浏览器
         Content browserContent = contentFactory.createContent(new BrowserPanel(), "Browser", false);
         Content notePanelWebVersion = contentFactory.createContent(new NotePanelWebVersion(project), "NoteList V2", false);
 
         // 添加流程图面板作为新的标签页
         NoteFlowchartPanel flowchartPanel = new NoteFlowchartPanel(project);
-        Content flowchartContent = contentFactory.createContent(flowchartPanel, "流程图", false);
+        Content flowchartContent = contentFactory.createContent(flowchartPanel, "NoteFlowChart", false);
 
         browserContent.setIcon(AllIcons.Actions.IntentionBulb);
-        toolWindow.getContentManager().addContent(mainContent);
         toolWindow.getContentManager().addContent(browserContent);
-        toolWindow.getContentManager().setSelectedContent(mainContent);
         toolWindow.getContentManager().addContent(notePanelWebVersion);
         toolWindow.getContentManager().addContent(flowchartContent);
+        toolWindow.getContentManager().setSelectedContent(notePanelWebVersion);
+        toolWindow.getContentManager().addContent(mainContent);
     }
 
 

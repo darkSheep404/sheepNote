@@ -52,7 +52,7 @@ public class NoteDetailsDialog extends DialogWrapper {
                     toolWindow.show();
                 }
                 // 定位并选中对应的笔记
-                NoteDataHandler.selectNoteInList(toolWindow,noteData);
+                // TODO 意思gutter显示有问题,未显示,修复gutter显示后,改为通知NoteListV2定位到笔记
                 // Close the dialog when the button is clicked.
                 close(DialogWrapper.OK_EXIT_CODE);
             }

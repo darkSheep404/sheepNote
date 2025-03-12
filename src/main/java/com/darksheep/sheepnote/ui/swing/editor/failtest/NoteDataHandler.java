@@ -1,15 +1,14 @@
 package com.darksheep.sheepnote.ui.swing.editor.failtest;
 
+import com.darksheep.sheepnote.config.NoteDataRepository;
 import com.darksheep.sheepnote.data.NoteData;
 import com.darksheep.sheepnote.ui.swing.toolWindow.NoteListToolWindowFactory;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.ui.components.JBList;
 import com.intellij.ui.content.Content;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,52 +37,14 @@ public final class NoteDataHandler {
 
                 Content content = toolWindow.getContentManager().getContent(0);
                 if (content != null) {
-                    DefaultListModel<NoteData> noteListModel = getNoteDataDefaultListModel(content);
-                    int size = noteListModel.getSize();
+                    List<NoteData> noteList = NoteDataRepository.getAllNoteData();
+                    int size = noteList.size();
                     for (int i = 0; i < size; i++) {
-                        addToNotesForFilePath(noteListModel.getElementAt(i));
+                        addToNotesForFilePath(noteList.get(i));
                     }
                 }
             }
         });
-    }
-
-    public static DefaultListModel<NoteData> getNoteDataDefaultListModel(Content content) {
-        JSplitPane mainPanel = (JSplitPane) content.getComponent();
-        JPanel leftPanel = (JPanel) mainPanel.getLeftComponent();
-        JPanel noteListWrapperPanel = (JPanel)leftPanel.getComponent(1);
-
-        JScrollPane scrollPane = (JScrollPane)noteListWrapperPanel.getComponent(0);
-        JList<?> list = (JList<?>) scrollPane.getViewport().getView();
-        @SuppressWarnings("unchecked")
-        DefaultListModel<NoteData> noteListModel = (DefaultListModel<NoteData>) list.getModel();
-        return noteListModel;
-    }
-
-    public  static void selectNoteInList(ToolWindow toolWindow,NoteData noteData){
-        Content content = toolWindow.getContentManager().getContent(0);
-        JSplitPane mainPanel = (JSplitPane) content.getComponent();
-        JPanel leftPanel = (JPanel) mainPanel.getLeftComponent();
-        JPanel noteListWrapperPanel = (JPanel)leftPanel.getComponent(1);
-        JScrollPane scrollPane = (JScrollPane)noteListWrapperPanel.getComponent(0);
-        JList<?> list = (JList<?>) scrollPane.getViewport().getView();
-        @SuppressWarnings("unchecked")
-        DefaultListModel<NoteData> noteListModel = (DefaultListModel<NoteData>) list.getModel();
-        int index = 0;
-
-        for (int i = 0; i < noteListModel.size(); i++) {
-            NoteData currentNote = noteListModel.get(i);
-            if(noteData.id == currentNote.id ){
-                index = i;
-                break;
-            }
-        }
-
-        JBList<NoteData> noteList = (JBList<NoteData>) scrollPane.getViewport().getView();
-        noteList.updateUI();
-        noteList.setSelectedIndex(index);
-        noteList.ensureIndexIsVisible(index);
-
     }
 
     @Deprecated
@@ -97,14 +58,4 @@ public final class NoteDataHandler {
                 k -> new ArrayList<>());
         notes.add(noteData);
     }
-    /*public void selectNoteInList(NoteData noteData,DefaultListModel<NoteData> noteListModel) {
-        for (int i = 0; i < noteListModel.getSize(); i++) {
-            NoteData currentNote = noteListModel.get(i);
-            if (noteData.id == currentNote.id) {
-                noteList.setSelectedIndex(i);
-                noteList.ensureIndexIsVisible(i);
-                break;
-            }
-        }
-    }*/
 }
