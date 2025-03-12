@@ -304,11 +304,6 @@
         }
 
         .notePath .path-actions {
-            display: none;
-            margin-left: auto;
-        }
-
-        .notePath:hover .path-actions {
             display: flex;
             gap: 8px;
         }
@@ -340,6 +335,7 @@
             flex-direction: column;
             min-height: 0;
             height: 100%;
+            max-width: 40%;
             background: var(--tertiary-background);
         }
 
@@ -383,17 +379,15 @@
         }
 
         .tags-container {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
             gap: 8px;
             padding: 8px 16px;
-            overflow-x: auto;
-            overflow-y: hidden;
+            overflow-y: auto;
             scrollbar-width: thin;
             transition: all 0.3s ease;
             max-height: 120px;
             min-height: 44px;
-            flex-wrap: wrap;
-            align-content: flex-start;
         }
 
         .tags-container.collapsed {
@@ -744,13 +738,14 @@
         </div>
         <div class="notePath" id="notePathRow">
             <div id="notePath"></div>
+            <div id="noteLineNumber"></div>
             <div class="path-actions">
-                <button class="path-action-button" onclick="openPathEdit()" title="编辑路径">
+                <button class="path-action-button" onclick="openPathEdit()" title="Edit Path">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
                     </svg>
                 </button>
-                <button class="path-action-button" onclick="openLink(JSON.stringify(noteItem))" title="跳转到文件">
+                <button class="path-action-button" onclick="openLink(JSON.stringify(noteItem))" title="Jump to File">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                     </svg>
@@ -876,6 +871,7 @@
                     document.getElementById('titleText').textContent = '';
                     document.getElementById('noteTime').innerHTML = '';
                     document.getElementById('notePath').textContent = '';
+                    document.getElementById('noteLineNumber').textContent = '';
                     document.getElementById('noteContent').textContent = '';
                 }
             })
@@ -889,17 +885,9 @@
     })
     function selectNote(note) {
         selectedNoteId = note.id;
-        noteItem =note;
+        noteItem = note;
         showNoteDetail(note);
-        renderNotes(notes.filter(n =>{
-            let value = document.getElementById('searchInput').value;
-            if(value){
-                return n.noteTitle.toLowerCase().includes(value.toLowerCase())||
-                    n.noteFilePath.toLowerCase().includes(value.toLowerCase())||
-                    n.selectCode.toLowerCase().includes(value.toLowerCase())
-        }else
-            return true;
-        }));
+        filterNotes();
     }
 
     function showNoteDetail(note) {
@@ -908,7 +896,8 @@
             <span>Created: ${formatDate(note.createTime)}</span>
             <span>Updated: ${formatDate(note.updateTime)}</span>
         `;
-        document.getElementById('notePath').textContent = `${note.noteFilePath}#${note.noteLineNumber}`;
+        document.getElementById('notePath').textContent = `${note.noteFilePath}`;
+        document.getElementById('noteLineNumber').textContent = `#${note.noteLineNumber}`;
         document.getElementById('noteContent').textContent = note.selectCode;
         renderNoteTags(note.tags);
     }
@@ -1044,7 +1033,7 @@
         if(!filtered.some(n => n.id === selectedNoteId)) {
             selectedNoteId = filtered[0]?.id;
         }
-        renderNotes(filtered);
+        filterNotes();
     });
 
     let sortByNameAsc = true;
@@ -1160,21 +1149,21 @@
         let filteredNotes = notes;
         const searchText = document.getElementById('searchInput').value.toLowerCase();
         
-        // 应用标签过滤
+        // 应用标签过滤 (使用 OR 逻辑)
         if (selectedTags.size > 0) {
             filteredNotes = filteredNotes.filter(note => {
                 if (!note.tags) return false;
                 const noteTags = note.tags.split(',').map(t => t.trim());
-                return Array.from(selectedTags).every(tag => noteTags.includes(tag));
+                return Array.from(selectedTags).some(tag => noteTags.includes(tag)); // 改为 some (OR 逻辑)
             });
         }
         
         // 应用搜索过滤
         if (searchText) {
-            filteredNotes = filteredNotes.filter(n =>
-                n.noteTitle.toLowerCase().includes(this.value.toLowerCase())||
-                n.noteFilePath.toLowerCase().includes(this.value.toLowerCase())||
-                n.selectCode.toLowerCase().includes(this.value.toLowerCase())
+            filteredNotes = filteredNotes.filter(note =>
+                note.noteTitle.toLowerCase().includes(searchText) ||
+                note.noteFilePath.toLowerCase().includes(searchText) ||
+                note.selectCode.toLowerCase().includes(searchText)
             );
         }
         
