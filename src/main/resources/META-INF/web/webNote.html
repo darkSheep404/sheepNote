@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -765,20 +765,20 @@
 <!-- 路径编辑弹窗 -->
 <div class="path-edit-overlay" id="pathEditOverlay">
     <div class="path-edit-modal">
-        <div class="path-edit-header">编辑文件路径</div>
+        <div class="path-edit-header">Edit File Path</div>
         <div class="path-edit-form">
             <div class="path-edit-field">
-                <label class="path-edit-label">文件路径</label>
+                <label class="path-edit-label">File Path</label>
                 <input type="text" class="path-edit-input" id="pathEditInput" placeholder="输入文件路径">
             </div>
             <div class="path-edit-field">
-                <label class="path-edit-label">行号</label>
+                <label class="path-edit-label">LineNumber</label>
                 <input type="number" class="path-edit-input line-number-input" id="lineNumberInput" min="1" placeholder="行号">
             </div>
         </div>
         <div class="path-edit-buttons">
-            <button class="path-edit-button path-edit-cancel" onclick="closePathEdit()">取消</button>
-            <button class="path-edit-button path-edit-save" onclick="savePathEdit()">保存</button>
+            <button class="path-edit-button path-edit-cancel" onclick="closePathEdit()">Cancel</button>
+            <button class="path-edit-button path-edit-save" onclick="savePathEdit()">Save</button>
         </div>
     </div>
 </div>
@@ -801,40 +801,110 @@
 </div>
 
 <script>
-    let notes = [
-        {
-            "id": 1,
-            "noteTitle": "A this Note",
-            "noteFilePath": "D:/coderepo/com.github/sheepNote/src/main/java/com/darksheep/sheepnote/toolWindow/NoteListController.java",
-            "noteLineNumber": 105,
-            "selectCode": "oteDataList.remove(selectedNote);",
-            "createTime": "May 26, 2023, 12:58:54 AM",
-            "updateTime": "May 26, 2023, 12:58:54 AM",
-            "tags": "important,TEST"
+    // 状态管理对象
+    const noteListState = {
+        filters: {
+            selectedTags: new Set(),
+            searchText: ''
         },
-        {
-            "id": 4,
-            "noteTitle": "B this Note",
-            "noteFilePath": "D:/coderepo/Test.java",
-            "noteLineNumber": 105,
-            "selectCode": "oteDataList.remove(selectedNote);",
-            "createTime": "May 26, 2024, 12:58:54 AM",
-            "updateTime": "May 26, 2024, 12:58:54 AM",
-            "tags": "important,IDEA"
-        }
-    ];
+        sort: {
+            field: 'updateTime',
+            direction: 'desc'
+        },
+        originalNotes: [],
+        filteredNotes: []
+    };
+
     let selectedNoteId = null;
     let noteItem = null;
     let contextMenuNoteId = null;
-    let selectedTags = new Set();
-    initializeNotes(JSON.stringify(notes));
-    function renderNotes(filteredNotes) {
+
+    // 初始化笔记列表
+    function initializeNotes(noteData) {
+        noteListState.originalNotes = JSON.parse(noteData);
+        if(noteListState.originalNotes.length > 0) {
+            updateNoteList();
+            selectNote(noteListState.originalNotes[0]);
+        } else {
+            updateNoteList();
+        }
+    }
+
+    // 统一的笔记列表更新方法
+    function updateNoteList() {
+        // 4. 更新标签面板
+        renderTags();
+        // 1. 应用筛选条件
+        let filtered = applyFilters(noteListState.originalNotes);
+        // 2. 应用排序
+        filtered = applySorting(filtered);
+        // 3. 更新状态
+        noteListState.filteredNotes = filtered;
+        // 5. 渲染UI
+        renderNotes(filtered);
+
+        // 6. 如果当前选中的笔记不在筛选结果中，选择第一个笔记
+        if (filtered.length > 0 && !filtered.some(note => note.id === selectedNoteId)) {
+            selectNote(filtered[0]);
+        } else if (filtered.length === 0) {
+            clearNoteDetail();
+        }
+    }
+
+    // 应用筛选条件
+    function applyFilters(notes) {
+        return notes.filter(note => {
+            // 标签筛选
+            const matchesTags = noteListState.filters.selectedTags.size === 0 || 
+                (note.tags && note.tags.split(',').some(tag => 
+                    noteListState.filters.selectedTags.has(tag.trim())
+                ));
+
+            // 搜索文本筛选
+            const searchText = noteListState.filters.searchText.toLowerCase();
+            const matchesSearch = searchText === '' || 
+                note.noteTitle.toLowerCase().includes(searchText) ||
+                note.noteFilePath.toLowerCase().includes(searchText) ||
+                note.selectCode.toLowerCase().includes(searchText);
+
+            return matchesTags && matchesSearch;
+        });
+    }
+
+    // 应用排序
+    function applySorting(notes) {
+        return [...notes].sort((a, b) => {
+            if (noteListState.sort.field === 'name') {
+                const result = a.noteTitle.localeCompare(b.noteTitle);
+                return noteListState.sort.direction === 'asc' ? result : -result;
+            } else {
+                const result = new Date(b.updateTime) - new Date(a.updateTime);
+                return noteListState.sort.direction === 'asc' ? -result : result;
+            }
+        });
+    }
+
+    // 清空笔记详情
+    function clearNoteDetail() {
+        document.getElementById('titleText').textContent = '';
+        document.getElementById('noteTime').innerHTML = '';
+        document.getElementById('notePath').textContent = '';
+        document.getElementById('noteLineNumber').textContent = '';
+        document.getElementById('noteContent').textContent = '';
+        document.getElementById('noteTagsContainer').innerHTML = '';
+    }
+
+    // 渲染笔记列表
+    function renderNotes(notes) {
         const noteList = document.getElementById('noteList');
         noteList.innerHTML = '';
-        filteredNotes.forEach(note => {
+        notes.forEach(note => {
             const li = document.createElement('li');
             li.oncontextmenu = (e) => showContextMenu(e, note.id);
-            li.className = `noteItem${selectedNoteId === note.id ? ' selected' : ''}`;
+            li.className = 'noteItem';  // 默认不添加 selected 类
+            if (selectedNoteId === note.id) {
+                li.classList.add('selected');
+            }
             li.innerHTML = `
                 <div style="flex:1">${note.noteTitle}</div>
                 <div style="font-size:12px;color:#888">${shortenPath(note.noteFilePath)}</div>
@@ -844,51 +914,174 @@
         });
     }
 
-    function showContextMenu(event, noteId) {
-        console.log('showContextMenu',noteId);
-        event.preventDefault();
-        contextMenuNoteId = noteId;
-        const contextMenu = document.getElementById('contextMenu');
-        contextMenu.style.display = 'block';
-        contextMenu.style.left = `${event.pageX}px`;
-        contextMenu.style.top = `${event.pageY}px`;
+    // 标签相关方法
+    function toggleTag(tag) {
+        if (noteListState.filters.selectedTags.has(tag)) {
+            noteListState.filters.selectedTags.delete(tag);
+        } else {
+            noteListState.filters.selectedTags.add(tag);
+        }
+        updateNoteList();
     }
+
+    function getAllTags() {
+        const tagsSet = new Set();
+        noteListState.originalNotes.forEach(note => {
+            if (note.tags) {
+                note.tags.split(',').forEach(tag => {
+                    if (tag.trim()) {
+                        tagsSet.add(tag.trim());
+                    }
+                });
+            }
+        });
+        return Array.from(tagsSet).sort();
+    }
+
+    function renderTags() {
+        debugger;
+        const tagsContainer = document.getElementById('tagsContainer');
+        const allTags = getAllTags();
+        
+        tagsContainer.innerHTML = '';
+        tagsContainer.className = 'tags-container tag-colors';
+
+        // 只显示当前有效的标签（至少有一个笔记包含该标签）//这里获取到的已经是剩余笔记的tag,移除的tag这里已经没有了
+        allTags.forEach(tag => {
+            if (isTagValid(tag)) {
+                const tagElement = document.createElement('div');
+                tagElement.className = `tag-item${noteListState.filters.selectedTags.has(tag) ? ' selected' : ''}`;
+                tagElement.textContent = tag;
+                tagElement.onclick = () => toggleTag(tag);
+                tagsContainer.appendChild(tagElement);
+            }
+        });
+        noteListState.filters.selectedTags.forEach(tag => {
+            if (!isTagValid(tag)) {
+                noteListState.filters.selectedTags.delete(tag);
+            }
+        });
+
+    }
+
+    // 检查标签是否有效（是否至少有一个笔记包含该标签）
+    function isTagValid(tag) {
+        return noteListState.originalNotes.some(note => 
+            note.tags && note.tags.split(',').map(t => t.trim()).includes(tag)
+        );
+    }
+
+    // 搜索功能
+    document.getElementById('searchInput').addEventListener('input', function() {
+        noteListState.filters.searchText = this.value;
+        updateNoteList();
+    });
+
+    // 排序功能
+    function sortNotesByName() {
+        noteListState.sort.field = 'name';
+        noteListState.sort.direction = noteListState.sort.direction === 'asc' ? 'desc' : 'asc';
+        updateNoteList();
+    }
+
+    function sortNotesByUpdateTime() {
+        noteListState.sort.field = 'updateTime';
+        noteListState.sort.direction = noteListState.sort.direction === 'asc' ? 'desc' : 'asc';
+        updateNoteList();
+    }
+
+    // 刷新功能
+    function refreshNotes() {
+        refreshNoteList()
+            .then(() => {
+                console.log('Notes refreshed successfully');
+            })
+            .catch(error => {
+                console.error('Error refreshing notes:', error);
+            });
+    }
+
+    // 删除笔记
     function deleteNote() {
         if (!contextMenuNoteId) return;
         
         deleteNoteFromDB(contextMenuNoteId)
             .then(() => {
-                // 从前端列表中移除笔记
-                notes = notes.filter(note => note.id !== contextMenuNoteId);
+                // 从原始数据中移除笔记
+                noteListState.originalNotes = noteListState.originalNotes.filter(
+                    note => note.id !== contextMenuNoteId
+                );
                 contextMenuNoteId = null;
                 document.getElementById('contextMenu').style.display = 'none';
                 
                 // 更新UI
-                renderNotes(notes);
-                if (notes.length > 0) {
-                    selectNote(notes[0]);
-                } else {
-                    // 清空详情面板
-                    document.getElementById('titleText').textContent = '';
-                    document.getElementById('noteTime').innerHTML = '';
-                    document.getElementById('notePath').textContent = '';
-                    document.getElementById('noteLineNumber').textContent = '';
-                    document.getElementById('noteContent').textContent = '';
-                }
+                updateNoteList();
             })
             .catch(error => {
                 console.error('Failed to delete note:', error);
                 alert('Failed to delete note: ' + error.message);
             });
     }
-    document.addEventListener('click', () => {
-        document.getElementById('contextMenu').style.display = 'none';
-    })
+
+    // 添加新笔记
+    function addNewNote(newNote) {
+        noteListState.originalNotes.unshift(newNote);
+        selectedNoteId = newNote.id;
+        noteItem = newNote;
+        updateNoteList();
+        
+        // 确保新笔记在列表中可见
+        const noteList = document.getElementById('noteList');
+        if (noteList.firstChild) {
+            noteList.firstChild.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    function showContextMenu(event, noteId) {
+        event.preventDefault();
+        event.stopPropagation();
+        contextMenuNoteId = noteId;
+        const contextMenu = document.getElementById('contextMenu');
+        contextMenu.style.display = 'block';
+        
+        // 确保菜单不会超出视窗
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const menuWidth = contextMenu.offsetWidth;
+        const menuHeight = contextMenu.offsetHeight;
+        
+        let left = event.pageX;
+        let top = event.pageY;
+        
+        if (left + menuWidth > viewportWidth) {
+            left = viewportWidth - menuWidth;
+        }
+        if (top + menuHeight > viewportHeight) {
+            top = viewportHeight - menuHeight;
+        }
+        
+        contextMenu.style.left = `${left}px`;
+        contextMenu.style.top = `${top}px`;
+    }
+
     function selectNote(note) {
+        if (!note) return;
+        
+        // 更新选中状态
         selectedNoteId = note.id;
         noteItem = note;
+        
+        // 更新UI
+        const allNotes = document.querySelectorAll('.noteItem');
+        allNotes.forEach(item => item.classList.remove('selected'));
+        const selectedNote = Array.from(allNotes).find(item => 
+            item.querySelector('div').textContent === note.noteTitle
+        );
+        if (selectedNote) {
+            selectedNote.classList.add('selected');
+        }
+        
         showNoteDetail(note);
-        filterNotes();
     }
 
     function showNoteDetail(note) {
@@ -990,77 +1183,6 @@
         }).replace(',', '');
     }
 
-    /** 其他原有函数保持不变，仅需添加以下代码... **/
-
-    /** 初始化时自动选择第一个笔记**/
-    function initializeNotes(noteData) {
-        notes = JSON.parse(noteData);
-        if(notes.length > 0) {
-            selectedNoteId = notes[0].id;
-            noteItem=notes[0];
-            showNoteDetail(notes[0]);
-        }
-        renderTags();
-        renderNotes(notes);
-    }
-
-    /** 添加新笔记 **/
-    function addNewNote(newNote) {
-        // 将新笔记添加到列表开头
-        notes.unshift(newNote);
-        
-        // 选中新笔记
-        selectedNoteId = newNote.id;
-        noteItem = newNote;
-        
-        // 更新UI
-        showNoteDetail(newNote);
-        renderNotes(notes);
-        
-        // 确保新笔记在列表中可见
-        const noteList = document.getElementById('noteList');
-        if (noteList.firstChild) {
-            noteList.firstChild.scrollIntoView({ behavior: 'smooth' });
-        }
-    }
-
-    /** 搜索时保持选中状态 **/
-    document.getElementById('searchInput').addEventListener('input', function() {
-        const filtered = notes.filter(n =>
-            n.noteTitle.toLowerCase().includes(this.value.toLowerCase())||
-            n.noteFilePath.toLowerCase().includes(this.value.toLowerCase())||
-            n.selectCode.toLowerCase().includes(this.value.toLowerCase())
-        );
-        if(!filtered.some(n => n.id === selectedNoteId)) {
-            selectedNoteId = filtered[0]?.id;
-        }
-        filterNotes();
-    });
-
-    let sortByNameAsc = true;
-    let sortByTimeAsc = true;
-
-    function sortNotesByName() {
-        notes.sort((a, b) => sortByNameAsc ? a.noteTitle.localeCompare(b.noteTitle) : b.noteTitle.localeCompare(a.noteTitle));
-        sortByNameAsc = !sortByNameAsc;
-        renderNotes(notes);
-    }
-
-    function sortNotesByUpdateTime() {
-        notes.sort((a, b) => sortByTimeAsc ? new Date(b.updateTime) - new Date(a.updateTime) : new Date(a.updateTime) - new Date(b.updateTime));
-        sortByTimeAsc = !sortByTimeAsc;
-        renderNotes(notes);
-    }
-    function refreshNotes() {
-        refreshNoteList()
-            .then(() => {
-                console.log('Notes refreshed successfully');
-            })
-            .catch(error => {
-                console.error('Error refreshing notes:', error);
-            });
-    }
-
     function saveNoteChanges() {
         if (!noteItem) return;
         
@@ -1106,73 +1228,6 @@
             icon.classList.add('collapsed');
         }
     }
-
-    function getAllTags(notes) {
-        const tagsSet = new Set();
-        notes.forEach(note => {
-            if (note.tags) {
-                note.tags.split(',').forEach(tag => {
-                    if (tag.trim()) {
-                        tagsSet.add(tag.trim());
-                    }
-                });
-            }
-        });
-        return Array.from(tagsSet).sort();
-    }
-
-    function renderTags() {
-        const tagsContainer = document.getElementById('tagsContainer');
-        const allTags = getAllTags(notes);
-        
-        tagsContainer.innerHTML = '';
-        tagsContainer.className = 'tags-container tag-colors';
-        allTags.forEach(tag => {
-            const tagElement = document.createElement('div');
-            tagElement.className = `tag-item${selectedTags.has(tag) ? ' selected' : ''}`;
-            tagElement.textContent = tag;
-            tagElement.onclick = () => toggleTag(tag);
-            tagsContainer.appendChild(tagElement);
-        });
-    }
-
-    function toggleTag(tag) {
-        if (selectedTags.has(tag)) {
-            selectedTags.delete(tag);
-        } else {
-            selectedTags.add(tag);
-        }
-        renderTags();
-        filterNotes();
-    }
-
-    function filterNotes() {
-        let filteredNotes = notes;
-        const searchText = document.getElementById('searchInput').value.toLowerCase();
-        
-        // 应用标签过滤 (使用 OR 逻辑)
-        if (selectedTags.size > 0) {
-            filteredNotes = filteredNotes.filter(note => {
-                if (!note.tags) return false;
-                const noteTags = note.tags.split(',').map(t => t.trim());
-                return Array.from(selectedTags).some(tag => noteTags.includes(tag)); // 改为 some (OR 逻辑)
-            });
-        }
-        
-        // 应用搜索过滤
-        if (searchText) {
-            filteredNotes = filteredNotes.filter(note =>
-                note.noteTitle.toLowerCase().includes(searchText) ||
-                note.noteFilePath.toLowerCase().includes(searchText) ||
-                note.selectCode.toLowerCase().includes(searchText)
-            );
-        }
-        
-        renderNotes(filteredNotes);
-    }
-
-    // 修改现有的搜索监听器
-    document.getElementById('searchInput').addEventListener('input', filterNotes);
 
     function renderNoteTags(tags) {
         const container = document.getElementById('noteTagsContainer');
@@ -1237,6 +1292,25 @@
     document.getElementById('tagEditOverlay').addEventListener('click', function(e) {
         if (e.target === this) {
             closeTagEdit();
+        }
+    });
+
+    // 添加右键菜单关闭处理
+    document.addEventListener('mouseup', function(e) {
+        const contextMenu = document.getElementById('contextMenu');
+        // 如果点击的不是右键菜单内的元素，则关闭菜单
+        if (!contextMenu.contains(e.target)) {
+            contextMenu.style.display = 'none';
+            contextMenuNoteId = null;
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        const contextMenu = document.getElementById('contextMenu');
+        // 如果点击的不是右键菜单内的元素，则关闭菜单
+        if (!contextMenu.contains(e.target)) {
+            contextMenu.style.display = 'none';
+            contextMenuNoteId = null;
         }
     });
 </script>

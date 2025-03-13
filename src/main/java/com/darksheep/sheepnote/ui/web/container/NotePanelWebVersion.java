@@ -201,7 +201,7 @@ public class NotePanelWebVersion extends SimpleToolWindowPanel {
                         "return new Promise((resolve, reject) => {" +
                         refreshNotesQuery.inject(
                                 "''",
-                                "function(response) { console.log('Notes refreshed successfully'); resolve(response); }",
+                                "function(response) { resolve(response); }",
                                 "function(error_code, error_message) { reject(new Error(error_code + ': ' + error_message)); }"
                         ) +
                         "});" +
