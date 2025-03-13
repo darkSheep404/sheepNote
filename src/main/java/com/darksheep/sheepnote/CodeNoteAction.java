@@ -125,7 +125,7 @@ public class CodeNoteAction extends AnAction {
         notePanel.add(titleTextField, gbc);
 
         // 标签部分
-        JLabel tagsLabel = new JLabel("Tags");
+        JLabel tagsLabel = new JLabel("Tags(Enter to add New tag when no tags to select)");
         tagsLabel.setFont(labelFont);
         tagsLabel.setForeground(inputForeground);
         gbc.gridy = 2;
@@ -169,65 +169,51 @@ public class CodeNoteAction extends AnAction {
         // 标签输入监听
         tagsTextField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             private void updatePopup() {
-                String input = tagsTextField.getText().trim();
-                String[] parts = input.split(",");
-                String currentTag = parts[parts.length - 1].trim().toLowerCase();
-                
-                if (currentTag.isEmpty()) {
-                    autoCompletePopup.setVisible(false);
-                    return;
-                }
-
-                autoCompletePopup.removeAll();
-                boolean hasMatches = false;
-
-                for (String tag : existingTags) {
-                    if (tag.toLowerCase().contains(currentTag)) {
-                        hasMatches = true;
-                        JMenuItem item = new JMenuItem(tag);
-                        item.setFont(inputFont);
-                        item.setBackground(inputBackground);
-                        item.setForeground(inputForeground);
-                        item.addMouseListener(new java.awt.event.MouseAdapter() {
-                            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                                item.setBackground(new Color(0, 122, 255, 30));
-                            }
-                            public void mouseExited(java.awt.event.MouseEvent evt) {
-                                item.setBackground(inputBackground);
-                            }
-                        });
-                        item.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
-                        item.addActionListener(e -> {
-                            String existingTags = getTagsFromPanel(tagsPanel);
-                            String newTag = tag.trim();
-                            
-                            // 检查标签是否已存在
-                            if (!existingTags.isEmpty()) {
-                                String[] tagArray = existingTags.split(",");
-                                for (String t : tagArray) {
-                                    if (t.trim().equalsIgnoreCase(newTag)) {
-                                        return; // 如果标签已存在，直接返回
-                                    }
-                                }
-                                existingTags += "," + newTag;
-                            } else {
-                                existingTags = newTag;
-                            }
-                            
-                            updateTagsDisplay(existingTags, tagsPanel, tagsTextField);
-                            tagsTextField.setText("");
-                            autoCompletePopup.setVisible(false);
-                        });
-                        autoCompletePopup.add(item);
+                SwingUtilities.invokeLater(() -> {
+                    String input = tagsTextField.getText().trim();
+                    String[] parts = input.split(",");
+                    String currentTag = parts[parts.length - 1].trim().toLowerCase();
+                    
+                    if (currentTag.isEmpty()) {
+                        autoCompletePopup.setVisible(false);
+                        return;
                     }
-                }
 
-                if (hasMatches) {
-                    autoCompletePopup.setPopupSize(tagsTextField.getWidth(), Math.min(200, autoCompletePopup.getComponentCount() * 35));
-                    autoCompletePopup.show(tagsTextField, 0, tagsTextField.getHeight());
-                } else {
-                    autoCompletePopup.setVisible(false);
-                }
+                    autoCompletePopup.removeAll();
+                    boolean hasMatches = false;
+
+                    // 只显示匹配的现有标签
+                    for (String tag : existingTags) {
+                        if (tag.toLowerCase().contains(currentTag)) {
+                            hasMatches = true;
+                            JMenuItem item = new JMenuItem(tag);
+                            item.setFont(inputFont);
+                            item.setBackground(inputBackground);
+                            item.setForeground(inputForeground);
+                            item.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
+                            
+                            item.addActionListener(e -> {
+                                addTagToPanel(tag, tagsPanel, tagsTextField);
+                                tagsTextField.setText("");
+                                autoCompletePopup.setVisible(false);
+                                tagsTextField.requestFocusInWindow();
+                            });
+                            
+                            autoCompletePopup.add(item);
+                        }
+                    }
+
+                    if (hasMatches) {
+                        if (!autoCompletePopup.isVisible()) {
+                            autoCompletePopup.show(tagsTextField, 0, tagsTextField.getHeight());
+                        }
+                        autoCompletePopup.setPopupSize(tagsTextField.getWidth(), 
+                            Math.min(200, autoCompletePopup.getComponentCount() * 35));
+                        tagsTextField.requestFocusInWindow();
+                    } else {
+                        autoCompletePopup.setVisible(false);
+                    }
+                });
             }
 
             public void insertUpdate(javax.swing.event.DocumentEvent e) { updatePopup(); }
@@ -244,34 +230,13 @@ public class CodeNoteAction extends AnAction {
                         if (text.endsWith(",")) {
                             text = text.substring(0, text.length() - 1);
                         }
-                        
-                        // 获取当前已有的标签
-                        String existingTags = getTagsFromPanel(tagsPanel);
-                        String newTag = text.trim();
-                        
-                        // 检查标签是否已存在
-                        boolean tagExists = false;
-                        if (!existingTags.isEmpty()) {
-                            String[] tagArray = existingTags.split(",");
-                            for (String t : tagArray) {
-                                if (t.trim().equalsIgnoreCase(newTag)) {
-                                    tagExists = true;
-                                    break;
-                                }
-                            }
-                            if (!tagExists) {
-                                existingTags += "," + newTag;
-                            }
-                        } else {
-                            existingTags = newTag;
-                        }
-                        
-                        if (!tagExists) {
-                            updateTagsDisplay(existingTags, tagsPanel, tagsTextField);
-                        }
+                        // 直接添加用户输入的标签，不管是否存在
+                        addTagToPanel(text, tagsPanel, tagsTextField);
                         tagsTextField.setText("");
                         e.consume();
                     }
+                } else if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE) {
+                    autoCompletePopup.setVisible(false);
                 }
             }
         });
@@ -307,12 +272,12 @@ public class CodeNoteAction extends AnAction {
         JBScrollPane scrollPane = new JBScrollPane(codeTextArea);
         scrollPane.setBorder(BorderFactory.createLineBorder(borderColor, 1, true));
         scrollPane.setBackground(inputBackground);
-        
+
         gbc.gridy = 5;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weighty = 1;
         gbc.insets = new Insets(0, 16, 16, 16);
-        
+
         // 设置首选大小
         Dimension preferredSize = new Dimension(500, 400);
         scrollPane.setPreferredSize(preferredSize);
@@ -492,6 +457,41 @@ public class CodeNoteAction extends AnAction {
         }
         System.out.println("Collected tags: " + tags.toString());  // 调试输出
         return tags.toString();
+    }
+
+    private void addTagToPanel(String newTag, JPanel tagsPanel, JTextField tagsTextField) {
+        newTag = newTag.trim();
+        if (newTag.isEmpty()) return;
+
+        // 检查标签是否已存在
+        for (Component comp : tagsPanel.getComponents()) {
+            if (comp instanceof JPanel) {
+                for (Component subComp : ((JPanel) comp).getComponents()) {
+                    if (subComp instanceof JLabel) {
+                        String existingTag = ((JLabel) subComp).getText();
+                        if (!existingTag.equals("×") && existingTag.trim().equalsIgnoreCase(newTag)) {
+                            return; // 标签已存在，直接返回
+                        }
+                    }
+                }
+            }
+        }
+
+        // 创建新标签
+        Color[] tagColors = {
+            new Color(88, 157, 246),   // 蓝色
+            new Color(130, 108, 246),  // 紫色
+            new Color(246, 108, 188),  // 粉色
+            new Color(246, 157, 88),   // 橙色
+            new Color(88, 246, 157)    // 绿色
+        };
+        int tagIndex = tagsPanel.getComponentCount() % tagColors.length;
+        Color tagColor = tagColors[tagIndex];
+
+        JPanel tagPanel = createTagPanel(newTag, tagColor, tagsPanel, tagsTextField);
+        tagsPanel.add(tagPanel);
+        tagsPanel.revalidate();
+        tagsPanel.repaint();
     }
 
 }
