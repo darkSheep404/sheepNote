@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Web Note List</title>
+    <link rel="stylesheet" href="./highlight/github.min.css">
+    <script src="./highlight/highlight.min.js"></script>
     <style>
         :root {
             --system-background: #f5f5f7;
@@ -671,6 +673,61 @@
                 background: rgba(30, 30, 30, 0.95);
             }
         }
+
+        /* 代码编辑区域样式 */
+        .code-container {
+            position: relative;
+            margin-top: 16px;
+            border-radius: var(--corner-radius);
+            overflow: hidden;
+            min-height: 200px;
+            width: 100%;
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            background: var(--tertiary-background);
+            border-bottom: 1px solid var(--control-color);
+            font-size: 12px;
+            color: var(--label-color);
+        }
+
+        .code-content {
+            background: var(--secondary-background);
+            padding: 16px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas;
+            font-size: 13px;
+            line-height: 1.5;
+            tab-size: 4;
+            white-space: pre;
+            word-break: break-word;
+            border: 1px solid var(--control-color);
+            border-radius: 0 0 var(--corner-radius) var(--corner-radius);
+            min-height: 200px;
+            width: 100%;
+            box-sizing: border-box;
+            resize: vertical;
+            overflow-y: auto;
+            display: block;
+            -moz-tab-size: 4;
+            -o-tab-size: 4;
+            -webkit-tab-size: 4;
+        }
+
+        .code-content:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        /* highlight.js 暗色模式适配 */
+        @media (prefers-color-scheme: dark) {
+            .hljs {
+                background: var(--secondary-background);
+                color: #e6e6e6;
+            }
+        }
     </style>
 </head>
 <body>
@@ -753,7 +810,12 @@
                 </button>
             </div>
         </div>
-        <div class="editable-content" id="noteContent" contenteditable="true"></div>
+        <div class="code-container">
+            <div class="code-header">
+                <span id="codeLanguage">Code</span>
+            </div>
+            <pre><code id="noteContent" class="code-content" contenteditable="true"></code></pre>
+        </div>
     </div>
 </div>
 
@@ -815,10 +877,35 @@
         filteredNotes: []
     };
 
+
     let selectedNoteId = null;
     let noteItem = null;
     let contextMenuNoteId = null;
-
+    let testNotes = [
+        {
+            "id": 1,
+            "noteTitle": "A this Note",
+            "noteFilePath": "D:/coderepo/NoteListController.java",
+            "noteLineNumber": 105,
+            "selectCode": "public class NoteData {\n" +
+                "\n" +
+                "    public Integer id;}",
+            "createTime": "May 26, 2023, 12:58:54 AM",
+            "updateTime": "May 26, 2023, 12:58:54 AM",
+            "tags": "important,TEST"
+        },
+        {
+            "id": 4,
+            "noteTitle": "B this Note",
+            "noteFilePath": "D:/coderepo/Test.java",
+            "noteLineNumber": 105,
+            "selectCode": "NoteDataList.remove(selectedNote);",
+            "createTime": "May 26, 2024, 12:58:54 AM",
+            "updateTime": "May 26, 2024, 12:58:54 AM",
+            "tags": "important,IDEA"
+        }
+    ];
+    initializeNotes(JSON.stringify(testNotes));
     // 初始化笔记列表
     function initializeNotes(noteData) {
         noteListState.originalNotes = JSON.parse(noteData);
@@ -939,7 +1026,6 @@
     }
 
     function renderTags() {
-        debugger;
         const tagsContainer = document.getElementById('tagsContainer');
         const allTags = getAllTags();
         
@@ -1092,7 +1178,19 @@
         `;
         document.getElementById('notePath').textContent = `${note.noteFilePath}`;
         document.getElementById('noteLineNumber').textContent = `#${note.noteLineNumber}`;
-        document.getElementById('noteContent').textContent = note.selectCode;
+        
+        // 设置代码内容和语言
+        const codeElement = document.getElementById('noteContent');
+        codeElement.textContent = note.selectCode;
+        const language = getLanguageFromPath(note.noteFilePath);
+        codeElement.className = `code-content ${language ? 'language-' + language : ''}`;
+        document.getElementById('codeLanguage').textContent = language ? language.charAt(0).toUpperCase() + language.slice(1) : 'Code';
+        
+        // 应用代码高亮
+        if (language) {
+            hljs.highlightElement(codeElement);
+        }
+        
         renderNoteTags(note.tags);
     }
     /* 文件路径点击处理 */
@@ -1142,16 +1240,16 @@
             return;
         }
 
-        const updatedNote = {
+        const newNote = {
             ...noteItem,
             noteFilePath: newPath,
             noteLineNumber: newLineNumber
         };
 
-        updateNote(updatedNote)
+        window.updateNote(newNote)
             .then(() => {
                 console.log('Note path updated successfully');
-                refreshNotes();
+                updateNoteList();
                 closePathEdit();
             })
             .catch(error => {
@@ -1195,10 +1293,24 @@
             tags: noteItem.tags
         };
 
-        updateNote(updatedNote)
+        window.updateNote(updatedNote)
             .then(() => {
                 console.log('Note updated successfully');
-                refreshNotes(); // 更新成功后刷新列表
+                // 更新本地数据
+                const noteIndex = noteListState.originalNotes.findIndex(n => n.id === updatedNote.id);
+                if (noteIndex !== -1) {
+                    noteListState.originalNotes[noteIndex] = {
+                        ...noteListState.originalNotes[noteIndex],
+                        ...updatedNote
+                    };
+                    // 重新应用高亮
+                    const codeElement = document.getElementById('noteContent');
+                    const language = getLanguageFromPath(updatedNote.noteFilePath);
+                    if (language) {
+                        hljs.highlightElement(codeElement);
+                    }
+                }
+                updateNoteList(); // 更新成功后刷新列表
             })
             .catch(error => {
                 console.error('Failed to update note:', error);
@@ -1274,7 +1386,7 @@
             tags: newTags
         };
 
-        updateNote(updatedNote)
+        window.updateNote(updatedNote)
             .then(() => {
                 console.log('Tags updated successfully');
                 noteItem.tags = newTags;
@@ -1312,6 +1424,69 @@
             contextMenu.style.display = 'none';
             contextMenuNoteId = null;
         }
+    });
+
+    // 根据文件扩展名判断编程语言
+    function getLanguageFromPath(filePath) {
+        const ext = filePath.split('.').pop().toLowerCase();
+        const languageMap = {
+            'js': 'javascript',
+            'jsx': 'javascript',
+            'ts': 'typescript',
+            'tsx': 'typescript',
+            'vue': 'javascript',  // Vue 文件当作 JavaScript 处理
+            'java': 'java',
+            'py': 'python',
+            'md': 'markdown',
+            'yml': 'yaml',
+            'yaml': 'yaml',
+        };
+        return languageMap[ext] || hljs.autoDetection(ext)&&ext || 'plaintext';
+    }
+
+    // 添加代码编辑区域的事件监听
+    document.getElementById('noteContent').addEventListener('input', function(e) {
+        // 在编辑时临时移除高亮
+        this.className = 'code-content';
+    });
+
+    // 添加粘贴事件处理
+    document.getElementById('noteContent').addEventListener('paste', function(e) {
+        e.preventDefault();
+        
+        // 获取粘贴的纯文本
+        const text = e.clipboardData.getData('text/plain');
+        
+        // 使用 document.execCommand 插入文本
+        document.execCommand('insertText', false, text);
+    });
+
+    document.getElementById('noteContent').addEventListener('blur', function(e) {
+        // 保存更改
+        saveNoteChanges();
+        // 重新应用高亮
+        const language = getLanguageFromPath(noteItem.noteFilePath);
+        if (language) {
+            this.className = `code-content language-${language}`;
+            hljs.highlightElement(this);
+        }
+    });
+
+    // 添加 Vue 文件内容检测
+    function detectVueBlockLanguage(code) {
+        if (code.trim().startsWith('<template')) {
+            return 'xml';
+        } else if (code.trim().startsWith('<script')) {
+            return 'javascript';
+        } else if (code.trim().startsWith('<style')) {
+            return 'css';
+        }
+        return 'xml'; // 默认使用 XML
+    }
+
+    // 初始化highlight.js
+    hljs.configure({
+        ignoreUnescapedHTML: true
     });
 </script>
 </body>
