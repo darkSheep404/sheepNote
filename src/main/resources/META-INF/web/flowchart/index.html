@@ -28,6 +28,12 @@
             <button id="refresh" class="toolbar-btn">
                 <span class="icon">⟳</span>Refresh
             </button>
+            <button id="toggleTheme" class="toolbar-btn" onclick="toggleTheme()">
+                <svg id="themeIcon" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-8.66h-1M4.34 12H3m15.07-6.93l-.7.7M6.34 17.66l-.7.7m12.02 0l-.7-.7M6.34 6.34l-.7-.7M12 5a7 7 0 100 14 7 7 0 000-14z"/>
+                </svg>
+                Theme
+            </button>
         </div>
     </div>
     
@@ -81,6 +87,15 @@
     <div id="flowchartContainer"></div>
 
     <style>
+        html[theme='dark-mode'] {
+            filter: invert(1) hue-rotate(180deg);
+        }
+        html[theme='dark-mode'] img{
+            filter: invert(1) hue-rotate(180deg);
+        }
+        html {
+            transition: color 300ms, background-color 300ms;
+        }
         /* iOS 风格的工具栏样式 */
         .toolbar {
             position: fixed;
@@ -1178,6 +1193,41 @@
                 }
             }
         });
+
+        function toggleTheme() {
+            const htmlElement = document.documentElement;
+            const isDarkMode = htmlElement.getAttribute('theme') === 'dark-mode';
+
+            if (isDarkMode) {
+                htmlElement.removeAttribute('theme');
+                localStorage.setItem('theme', 'light');
+                document.getElementById('themeIcon').innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-8.66h-1M4.34 12H3m15.07-6.93l-.7.7M6.34 17.66l-.7.7m12.02 0l-.7-.7M6.34 6.34l-.7-.7M12 5a7 7 0 100 14 7 7 0 000-14z"/>
+                `;
+            } else {
+                htmlElement.setAttribute('theme', 'dark-mode');
+                localStorage.setItem('theme', 'dark');
+                document.getElementById('themeIcon').innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                `;
+            }
+        }
+
+        // 初始化主题
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('theme', 'dark-mode');
+                document.getElementById('themeIcon').innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                `;
+            } else {
+                document.documentElement.removeAttribute('theme');
+                document.getElementById('themeIcon').innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-8.66h-1M4.34 12H3m15.07-6.93l-.7.7M6.34 17.66l-.7.7m12.02 0l-.7-.7M6.34 6.34l-.7-.7M12 5a7 7 0 100 14 7 7 0 000-14z"/>
+                `;
+            }
+        });
     </script>
 </body>
-</html> 
+</html>

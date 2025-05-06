@@ -49,6 +49,8 @@ public class NoteListToolWindowFactory implements ToolWindowFactory {
 
     private static NoteDataHandler noteDataHandler;
 
+
+
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
 
